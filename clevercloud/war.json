@@ -1,0 +1,10 @@
+{
+  "deploy": {
+    "container": "TOMCAT9",
+    "war": [
+      {
+        "file": "ROOT.war"
+      }
+    ]
+  }
+}
