@@ -81,9 +81,9 @@ public class LoginServlet extends HttpServlet {
         String role = user.getRole();
 
         if ("Tourist".equalsIgnoreCase(role)) {
-            response.sendRedirect("home.jsp");
+            response.sendRedirect("index.jsp");
         } else if ("Local Business".equalsIgnoreCase(role)) {
-            response.sendRedirect("home.jsp");
+            response.sendRedirect("index.jsp");
         } else if ("Content Manager".equalsIgnoreCase(role)) {
            response.sendRedirect("ContentDashboardServlet");
         } else {

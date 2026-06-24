@@ -73,7 +73,7 @@ public class DeleteAccountServlet extends HttpServlet {
             session.invalidate();
 
             // Redirect to homepage after deletion
-            response.sendRedirect("home.jsp?msg=Account+deleted+successfully");
+            response.sendRedirect("index.jsp?msg=Account+deleted+successfully");
 
         } catch (Exception e) {
             e.printStackTrace();

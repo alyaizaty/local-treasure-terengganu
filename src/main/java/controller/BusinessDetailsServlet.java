@@ -15,7 +15,7 @@ public class BusinessDetailsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String idStr = request.getParameter("id");
         if (idStr == null || idStr.trim().isEmpty()) {
-            response.sendRedirect("home.jsp");
+            response.sendRedirect("index.jsp");
             return;
         }
 
@@ -23,7 +23,7 @@ public class BusinessDetailsServlet extends HttpServlet {
         try {
             businessId = Integer.parseInt(idStr);
         } catch (Exception e) {
-            response.sendRedirect("home.jsp");
+            response.sendRedirect("index.jsp");
             return;
         }
 
@@ -47,7 +47,7 @@ public class BusinessDetailsServlet extends HttpServlet {
                         business.put("image", rs.getString("image"));
                         business.put("category", rs.getString("category_name") != null ? rs.getString("category_name") : "General");
                     } else {
-                        response.sendRedirect("home.jsp");
+                        response.sendRedirect("index.jsp");
                         return;
                     }
                 }

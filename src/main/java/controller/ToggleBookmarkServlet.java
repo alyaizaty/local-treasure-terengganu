@@ -27,7 +27,7 @@ public class ToggleBookmarkServlet extends HttpServlet {
 
         String locIdStr = request.getParameter("locationId");
         if (locIdStr == null || locIdStr.trim().isEmpty()) {
-            response.sendRedirect("home.jsp");
+            response.sendRedirect("index.jsp");
             return;
         }
 
@@ -35,7 +35,7 @@ public class ToggleBookmarkServlet extends HttpServlet {
         try {
             locationId = Integer.parseInt(locIdStr);
         } catch (NumberFormatException e) {
-            response.sendRedirect("home.jsp");
+            response.sendRedirect("index.jsp");
             return;
         }
 
@@ -50,7 +50,7 @@ public class ToggleBookmarkServlet extends HttpServlet {
             }
 
             String back = request.getHeader("Referer");
-            response.sendRedirect(back != null ? back : "home.jsp");
+            response.sendRedirect(back != null ? back : "index.jsp");
 
         } catch (Exception e) {
             e.printStackTrace();

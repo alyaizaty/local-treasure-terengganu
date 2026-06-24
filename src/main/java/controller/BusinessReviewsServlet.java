@@ -18,7 +18,7 @@ public class BusinessReviewsServlet extends HttpServlet {
         String idStr = request.getParameter("id");
 
         if (idStr == null || idStr.trim().isEmpty()) {
-            response.sendRedirect("home.jsp");
+            response.sendRedirect("index.jsp");
             return;
         }
 
@@ -27,7 +27,7 @@ public class BusinessReviewsServlet extends HttpServlet {
         try {
             businessId = Integer.parseInt(idStr);
         } catch (NumberFormatException e) {
-            response.sendRedirect("home.jsp");
+            response.sendRedirect("index.jsp");
             return;
         }
 
@@ -57,7 +57,7 @@ public class BusinessReviewsServlet extends HttpServlet {
                         String img = rs.getString("image");
                         business.put("image", (img != null && !img.trim().isEmpty()) ? img : "default_business.jpg");
                     } else {
-                        response.sendRedirect("home.jsp");
+                        response.sendRedirect("index.jsp");
                         return;
                     }
                 }
