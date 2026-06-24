@@ -297,7 +297,7 @@
                         <select name="categoryId" required>
                             <option value="">-- Select Category --</option>
                             <%
-                                try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/ltwbs", "root", "")) {
+                                try (Connection conn = util.DBConnection.getConnection()) {
                                     String sql = "SELECT category_id, name FROM categories ORDER BY name ASC";
                                     try(Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)){
                                         while(rs.next()){

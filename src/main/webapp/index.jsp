@@ -2,6 +2,7 @@
 <%@ page import="java.sql.*" %>
 <%@ page import="java.net.URLEncoder" %>
 <%@ page import="java.util.*" %>
+<%@ page import="util.DBConnection" %>
 <%
     Integer userId = (Integer) session.getAttribute("userId");
     String username = (String) session.getAttribute("username");
@@ -226,7 +227,7 @@
             </h2>
             <div class="treasures-grid">
                 <%
-                    try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/ltwbs", "root", "")) {
+                    try (Connection conn = util.DBConnection.getConnection()) {
                         StringBuilder sql = new StringBuilder();
                         sql.append("SELECT l.location_id, l.name, l.description, l.image, l.views, l.is_featured, ");
                         sql.append(loggedIn ? "EXISTS(SELECT 1 FROM bookmarks b WHERE b.user_id=? AND b.location_id=l.location_id) AS bookmarked, " : "0 AS bookmarked, ");

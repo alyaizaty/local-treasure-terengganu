@@ -216,7 +216,7 @@
     <h2 class="section-title">All Locations</h2>
     <div class="treasures-grid">
         <%
-            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/ltwbs", "root", "")) {
+            try (Connection conn = util.DBConnection.getConnection()) {
                 // FIXED: Added WHERE l.business_id IS NULL so businesses are hidden from the Treasures page
                 String sql =
                         "SELECT l.location_id, l.name, l.description, l.image, " +
