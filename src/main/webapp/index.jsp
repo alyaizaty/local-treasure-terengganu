@@ -39,8 +39,8 @@
     int notiComments = 0;
     int notiTotal = 0;
     if (loggedIn) {
-        try (Connection connN = DriverManager.getConnection("jdbc:mysql://localhost:3306/ltwbs", "root", "")) {
-            try (PreparedStatement ps = connN.prepareStatement(
+        try (Connection conn = util.DBConnection.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(
                     "SELECT COUNT(*) c FROM likes lk JOIN reviews r ON r.review_id = lk.review_id WHERE r.user_id=? AND lk.user_id <> ?")) {
                 ps.setInt(1, userId);
                 ps.setInt(2, userId);
@@ -49,7 +49,7 @@
                 }
             } catch (Exception ignore) {}
             
-            try (PreparedStatement ps = connN.prepareStatement(
+            try (PreparedStatement ps = conn.prepareStatement(
                     "SELECT COUNT(*) c FROM comments c JOIN reviews r ON r.review_id = c.review_id WHERE r.user_id=? AND c.user_id <> ?")) {
                 ps.setInt(1, userId);
                 ps.setInt(2, userId);
@@ -152,7 +152,6 @@
                 <button class="navbar-toggle" id="navbarToggle" type="button"><i class="fas fa-bars"></i></button>
             </div>
         </nav>
-
         <header class="header">
             <div class="container header-content">
                 <h1>Local Treasure Terengganu</h1>
@@ -165,7 +164,6 @@
                 <% }%>
             </div>
         </header>
-
         <section class="cta-wrap">
             <div class="cta-card">
                 <h3>Know a Hidden Gem?</h3>
@@ -178,7 +176,6 @@
                 <p>Share your favorite local spots with fellow explorers and help others discover the best of Terengganu.</p>
             </div>
         </section>
-
         <section class="search-section">
             <div class="container search-container">
                 <div class="filter-dropdown">
@@ -194,15 +191,14 @@
                 <button class="search-btn" onclick="searchLocations()" type="button">Search</button>
             </div>
         </section>
-
         <section class="categories-section container">
             <h2>Explore By Category</h2>
             <div class="categories">
                 <button class="category-btn <%= (selectedCategoryId == 0) ? "active" : ""%>" onclick="applyCategory(0)" type="button">All Treasures</button>
                 <%
-                    try (Connection connC = DriverManager.getConnection("jdbc:mysql://localhost:3306/ltwbs", "root", "")) {
+                	try (Connection conn = util.DBConnection.getConnection()) {
                         String catSql = "SELECT category_id, name FROM categories ORDER BY name ASC";
-                        try (PreparedStatement psC = connC.prepareStatement(catSql); ResultSet rsC = psC.executeQuery()) {
+                        try (PreparedStatement psC = conn.prepareStatement(catSql); ResultSet rsC = psC.executeQuery()) {
                             while (rsC.next()) {
                                 int cId = rsC.getInt("category_id");
                                 String cName = rsC.getString("name");
@@ -215,7 +211,6 @@
                 %>
             </div>
         </section>
-
         <section class="treasures-section container">
             <h2 class="section-title">
                 <% if ("all".equals(filter)) { %> All Locations 
@@ -340,7 +335,7 @@
                     PreparedStatement homeBizPs = null;
                     ResultSet homeBizRs = null;
                     try {
-                        homeBizConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/ltwbs", "root", "");
+                        homeBizConn = util.DBConnection.getConnection();
                         
                         StringBuilder bizSql = new StringBuilder(
                             "SELECT b.business_id, b.user_id, b.business_name, b.description, b.address, " +
@@ -354,7 +349,6 @@
                             "LEFT JOIN (SELECT location_id, AVG(rating) AS avg_rating, COUNT(review_id) AS total_reviews " +
                             "FROM reviews GROUP BY location_id) rev_agg ON l.location_id = rev_agg.location_id "
                         );
-
                         // Apply dynamic filters to businesses
                         ArrayList<String> bizWhere = new ArrayList<>();
                         if (selectedCategoryId > 0) {
@@ -363,7 +357,6 @@
                         if (searchText != null && !searchText.trim().isEmpty()) {
                             bizWhere.add("(b.business_name LIKE ? OR b.description LIKE ?)");
                         }
-
                         if (!bizWhere.isEmpty()) {
                             bizSql.append(" WHERE ");
                             for (int i = 0; i < bizWhere.size(); i++) {
@@ -371,7 +364,6 @@
                                 bizSql.append(bizWhere.get(i));
                             }
                         }
-
                         if ("rated".equals(filter)) {
                             bizSql.append(" ORDER BY avg_rating DESC, b.business_id DESC");
                         } else if ("views".equals(filter) || "popular".equals(filter)) {
@@ -379,7 +371,6 @@
                         } else {
                             bizSql.append(" ORDER BY b.business_id DESC");
                         }
-
                         homeBizPs = homeBizConn.prepareStatement(bizSql.toString());
                         
                         int bIdx = 1;
@@ -391,7 +382,6 @@
                             homeBizPs.setString(bIdx++, kw);
                             homeBizPs.setString(bIdx++, kw);
                         }
-
                         homeBizRs = homeBizPs.executeQuery();
                         boolean hasBiz = false;
                         
@@ -561,7 +551,6 @@
                 // Clear input and scroll down
                 input.value = "";
                 messages.scrollTop = messages.scrollHeight;
-
                 // Send to Server
                 fetch('chatbot', {
                     method: 'POST',
