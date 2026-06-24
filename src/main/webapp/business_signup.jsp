@@ -335,7 +335,7 @@
             </div>
 
             <div class="footer-links">
-                <a href="home.jsp">Home</a>
+                <a href="index.jsp">Home</a>
                 <a href="treasures.jsp">Treasures</a>
                 <a href="about.jsp">About Us</a>
                 <a href="plan-visit.jsp">Plan Your Visit</a>

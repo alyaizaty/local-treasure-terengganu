@@ -224,7 +224,7 @@
       <p>Sign in to bookmark locations, submit hidden gems, and join the community.</p>
     </div>
     <div class="actions">
-      <a class="btnTop" href="home.jsp"><i class="fas fa-arrow-left"></i> Back to Home</a>
+      <a class="btnTop" href="index.jsp"><i class="fas fa-arrow-left"></i> Back to Home</a>
       <a class="btnTop" href="sign_up.jsp"><i class="fas fa-user-plus"></i> Sign Up</a>
     </div>
   </div>

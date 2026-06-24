@@ -37,23 +37,25 @@ public class BusinessReviewsServlet extends HttpServlet {
 
         try (Connection conn = DBConnection.getConnection()) {
 
+            // 1. Fetch Business Details
             String sqlBusiness =
-                    "SELECT b.business_id, b.business_name, b.description, b.category_id, c.name AS category_name " +
+                    "SELECT b.business_id, b.business_name, b.description, b.category_id, b.image, c.name AS category_name " +
                     "FROM businesses b " +
                     "LEFT JOIN categories c ON b.category_id = c.category_id " +
                     "WHERE b.business_id = ?";
 
             try (PreparedStatement ps = conn.prepareStatement(sqlBusiness)) {
                 ps.setInt(1, businessId);
-
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         business.put("id", rs.getInt("business_id"));
                         business.put("name", rs.getString("business_name"));
                         business.put("desc", rs.getString("description"));
                         business.put("category_id", rs.getInt("category_id"));
-                        business.put("category_name", rs.getString("category_name") != null ? rs.getString("category_name") : "Business");
-                        business.put("image", "default_business.jpg");
+                        business.put("category_name", rs.getString("category_name") != null ? rs.getString("category_name") : "General");
+                        
+                        String img = rs.getString("image");
+                        business.put("image", (img != null && !img.trim().isEmpty()) ? img : "default_business.jpg");
                     } else {
                         response.sendRedirect("home.jsp");
                         return;
@@ -61,11 +63,10 @@ public class BusinessReviewsServlet extends HttpServlet {
                 }
             }
 
+            // 2. Find the linked location_id for this business
             String checkLocationSql = "SELECT location_id FROM location WHERE business_id = ? LIMIT 1";
-
             try (PreparedStatement ps = conn.prepareStatement(checkLocationSql)) {
                 ps.setInt(1, businessId);
-
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         targetLocationId = rs.getInt("location_id");
@@ -73,6 +74,7 @@ public class BusinessReviewsServlet extends HttpServlet {
                 }
             }
 
+            // If no location exists for this business yet, create a dummy one so reviews work
             if (targetLocationId == 0) {
                 String insertLocationSql =
                         "INSERT INTO location (category_id, name, description, image, business_id, views, is_featured) " +
@@ -82,7 +84,7 @@ public class BusinessReviewsServlet extends HttpServlet {
                     ps.setInt(1, (Integer) business.get("category_id"));
                     ps.setString(2, String.valueOf(business.get("name")));
                     ps.setString(3, String.valueOf(business.get("desc")));
-                    ps.setString(4, "default_business.jpg");
+                    ps.setString(4, String.valueOf(business.get("image"))); 
                     ps.setInt(5, businessId);
                     ps.executeUpdate();
 
@@ -94,16 +96,13 @@ public class BusinessReviewsServlet extends HttpServlet {
                 }
             }
 
+            // 3. Aggregate Rating Calculations
             double avgRating = 0.0;
             int totalReviews = 0;
 
-            String aggSql =
-                    "SELECT IFNULL(AVG(rating), 0) AS avg_rating, COUNT(review_id) AS total_reviews " +
-                    "FROM reviews WHERE location_id = ?";
-
+            String aggSql = "SELECT IFNULL(AVG(rating), 0) AS avg_rating, COUNT(review_id) AS total_reviews FROM reviews WHERE location_id = ?";
             try (PreparedStatement ps = conn.prepareStatement(aggSql)) {
                 ps.setInt(1, targetLocationId);
-
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         avgRating = rs.getDouble("avg_rating");
@@ -112,16 +111,14 @@ public class BusinessReviewsServlet extends HttpServlet {
                 }
             }
 
+            // 4. Rating Distribution
             String distSql = "SELECT rating, COUNT(*) c FROM reviews WHERE location_id=? GROUP BY rating";
-
             try (PreparedStatement ps = conn.prepareStatement(distSql)) {
                 ps.setInt(1, targetLocationId);
-
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         int r = rs.getInt("rating");
                         int c = rs.getInt("c");
-
                         if (r >= 1 && r <= 5) {
                             dist[r] = c;
                         }
@@ -129,21 +126,21 @@ public class BusinessReviewsServlet extends HttpServlet {
                 }
             }
 
-            business.put("avg_rating", avgRating);
-            business.put("total_reviews", totalReviews);
+            // Safely put the primitive values into the map
+            business.put("avg_rating", Double.valueOf(avgRating));
+            business.put("total_reviews", Integer.valueOf(totalReviews));
 
         } catch (Exception e) {
             e.printStackTrace();
             response.setContentType("text/html;charset=UTF-8");
-            response.getWriter().println("<h3 style='color:red;'>Business Reviews Error</h3>");
-            response.getWriter().println("<pre>" + e.getMessage() + "</pre>");
+            response.getWriter().println("<h3>Business Reviews Error</h3><pre>" + e.getMessage() + "</pre>");
             return;
         }
 
+        // 5. Send data to JSP
         request.setAttribute("business", business);
         request.setAttribute("targetLocationId", targetLocationId);
         request.setAttribute("dist", dist);
-
         request.getRequestDispatcher("/business_reviews.jsp").forward(request, response);
     }
 }

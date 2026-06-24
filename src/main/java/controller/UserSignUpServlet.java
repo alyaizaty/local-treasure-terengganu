@@ -53,34 +53,6 @@ public class UserSignUpServlet extends HttpServlet {
             return;
         }
 
-        Part filePart;
-        try {
-            filePart = request.getPart("profilePicture");
-        } catch (Exception e) {
-            filePart = null;
-        }
-
-        if (filePart == null || filePart.getSize() <= 0) {
-            request.setAttribute("errorMessage", "Profile picture is required.");
-            request.getRequestDispatcher("sign_up.jsp").forward(request, response);
-            return;
-        }
-
-        String submitted = FileUploadUtil.getSubmittedFileName(filePart);
-        String ext = FileUploadUtil.getExtension(submitted).toLowerCase();
-
-        if (!FileUploadUtil.isAllowedImageExtension(ext)) {
-            request.setAttribute("errorMessage", "Only JPG/PNG/WEBP/GIF allowed.");
-            request.getRequestDispatcher("sign_up.jsp").forward(request, response);
-            return;
-        }
-
-        if (!FileUploadUtil.isImageContentType(filePart.getContentType())) {
-            request.setAttribute("errorMessage", "Invalid image file.");
-            request.getRequestDispatcher("sign_up.jsp").forward(request, response);
-            return;
-        }
-
         UserDAO userDAO = new UserDAO();
 
         if (userDAO.existsByUsernameOrEmail(username, email)) {
@@ -89,17 +61,43 @@ public class UserSignUpServlet extends HttpServlet {
             return;
         }
 
-        String savedFileName = null;
+        Part filePart = null;
+        try {
+            filePart = request.getPart("profilePicture");
+        } catch (Exception e) {
+            // Ignored so that profile picture is optional
+        }
+
+        String savedFileName = null; // Defaults to null for the "kosong" picture
 
         try {
-            FileUploadUtil.createUploadDirectory();
-            savedFileName = FileUploadUtil.saveProfileImage(filePart);
+            // ONLY process the image if the user actually uploaded one
+            if (filePart != null && filePart.getSize() > 0) {
+                String submitted = FileUploadUtil.getSubmittedFileName(filePart);
+                String ext = FileUploadUtil.getExtension(submitted).toLowerCase();
 
+                if (!FileUploadUtil.isAllowedImageExtension(ext)) {
+                    request.setAttribute("errorMessage", "Only JPG/PNG/WEBP/GIF allowed.");
+                    request.getRequestDispatcher("sign_up.jsp").forward(request, response);
+                    return;
+                }
+
+                if (!FileUploadUtil.isImageContentType(filePart.getContentType())) {
+                    request.setAttribute("errorMessage", "Invalid image file.");
+                    request.getRequestDispatcher("sign_up.jsp").forward(request, response);
+                    return;
+                }
+
+                FileUploadUtil.createUploadDirectory();
+                savedFileName = FileUploadUtil.saveProfileImage(filePart);
+            }
+
+            // Create the User object
             User user = new User();
             user.setUsername(username);
             user.setEmail(email);
             user.setPassword(PasswordUtil.hashPassword(password));
-            user.setProfilePicture(savedFileName);
+            user.setProfilePicture(savedFileName); // Will be null if no image was uploaded
             user.setRole(role);
 
             boolean success = userDAO.insertUser(user);
@@ -115,6 +113,7 @@ public class UserSignUpServlet extends HttpServlet {
                 response.sendRedirect("login.jsp?msg=Account created. Please login.");
 
             } else {
+                // Cleanup file if DB insert fails
                 if (savedFileName != null) {
                     FileUploadUtil.deleteProfileImage(savedFileName);
                 }
@@ -124,6 +123,7 @@ public class UserSignUpServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
+            // Cleanup file if error occurs
             if (savedFileName != null) {
                 FileUploadUtil.deleteProfileImage(savedFileName);
             }

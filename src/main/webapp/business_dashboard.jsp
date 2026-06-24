@@ -1,49 +1,38 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.sql.*, java.util.*, util.DBConnection" %>
-
 <%
     Integer userId = (Integer) session.getAttribute("userId");
     if (userId == null) {
         response.sendRedirect("login.jsp");
         return;
     }
-
     String username = (String) session.getAttribute("username");
-    String email = (String) session.getAttribute("email");
     String role = (String) session.getAttribute("role");
     String profilePicture = (String) session.getAttribute("profilePicture");
-
+    
     if (role == null || !role.equals("Local Business")) {
-        response.sendRedirect("home.jsp");
+        response.sendRedirect("index.jsp");
         return;
     }
-
+    
     boolean hasPic = (profilePicture != null && !profilePicture.trim().isEmpty());
-    String profileImgUrl = hasPic
-            ? (request.getContextPath() + "/ProfileImageServlet?file=" + profilePicture)
-            : "image/profile.jpeg";
+    String profileImgUrl = hasPic ? (request.getContextPath() + "/ProfileImageServlet?file=" + profilePicture) : "image/profile.jpeg";
 
     int businessId = 0;
-    String businessName = "";
-    String businessDescription = "";
-    String businessAddress = "";
-    String businessPhone = "";
-    String businessHours = "";
-
-    int totalLocations = 0;
-    int totalReviews = 0;
-    int activePromotions = 0;
-
+    String businessName = "", businessDescription = "", businessAddress = "", businessPhone = "", businessHours = "";
+    int totalLocations = 0, totalReviews = 0, activePromotions = 0;
+    
     List<Map<String, Object>> locationList = new ArrayList<>();
     List<Map<String, Object>> promotionList = new ArrayList<>();
     List<Map<String, Object>> reviewList = new ArrayList<>();
+    String dbError = "";
+
+    // IMPORTANT: Change this if your table name is 'locations' (plural)
+    String locTable = "location"; 
 
     try (Connection conn = DBConnection.getConnection()) {
-
-        // ===== 1) Get business info =====
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT business_id, business_name, description, address, contact_phone, operating_hours " +
-                "FROM businesses WHERE user_id = ? LIMIT 1")) {
+        // 1. Get Business Info
+        try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM businesses WHERE user_id = ? LIMIT 1")) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -55,135 +44,63 @@
                     businessHours = rs.getString("operating_hours");
                 }
             }
-        } catch (Exception ignore) {}
+        }
 
-        // ===== 2) Total locations =====
-        // Try option A: locations owned directly by business
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT COUNT(*) c FROM locations WHERE business_id = ?")) {
+        // 2. Aggregates
+        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM " + locTable + " WHERE business_id = ?")) {
             ps.setInt(1, businessId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) totalLocations = rs.getInt("c");
-            }
-        } catch (Exception e) {
-            // Try option B: location submissions by this business user
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "SELECT COUNT(*) c FROM location_submission WHERE user_id = ?")) {
-                ps.setInt(1, userId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) totalLocations = rs.getInt("c");
-                }
-            } catch (Exception ignore) {}
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) totalLocations = rs.getInt(1);
         }
 
-        // ===== 3) Total reviews =====
-        // Try option A: reviews on business-owned locations
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT COUNT(*) c " +
-                "FROM reviews r " +
-                "JOIN locations l ON l.location_id = r.location_id " +
-                "WHERE l.business_id = ?")) {
+        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM reviews r JOIN " + locTable + " l ON l.location_id = r.location_id WHERE l.business_id = ?")) {
             ps.setInt(1, businessId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) totalReviews = rs.getInt("c");
-            }
-        } catch (Exception e) {
-            // Try option B: reviews on locations created by this user
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "SELECT COUNT(*) c " +
-                    "FROM reviews r " +
-                    "JOIN locations l ON l.location_id = r.location_id " +
-                    "WHERE l.user_id = ?")) {
-                ps.setInt(1, userId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) totalReviews = rs.getInt("c");
-                }
-            } catch (Exception ignore) {}
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) totalReviews = rs.getInt(1);
         }
 
-        // ===== 4) Active promotions =====
-        if (businessId > 0) {
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "SELECT COUNT(*) c FROM promotions " +
-                    "WHERE business_id = ? AND (is_active = 1 OR is_active = '1' OR is_active = 'Yes' OR is_active = 'YES')")) {
-                ps.setInt(1, businessId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) activePromotions = rs.getInt("c");
-                }
-            } catch (Exception e) {
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "SELECT COUNT(*) c FROM promotions WHERE business_id = ?")) {
-                    ps.setInt(1, businessId);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        if (rs.next()) activePromotions = rs.getInt("c");
-                    }
-                } catch (Exception ignore) {}
-            }
-        }
-
-        // ===== 5) Location list =====
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT location_id, name, description " +
-                "FROM locations WHERE business_id = ? ORDER BY location_id DESC")) {
+        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM promotions WHERE business_id = ? AND is_active = 1")) {
             ps.setInt(1, businessId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> row = new HashMap<>();
-                    row.put("id", rs.getInt("location_id"));
-                    row.put("name", rs.getString("name"));
-                    row.put("desc", rs.getString("description"));
-                    locationList.add(row);
-                }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) activePromotions = rs.getInt(1);
+        }
+
+        // 3. Location List
+        try (PreparedStatement ps = conn.prepareStatement("SELECT location_id, name, description FROM " + locTable + " WHERE business_id = ? ORDER BY location_id DESC")) {
+            ps.setInt(1, businessId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("id", rs.getInt("location_id"));
+                row.put("name", rs.getString("name"));
+                row.put("desc", rs.getString("description"));
+                locationList.add(row);
             }
-        } catch (Exception e) {
-            // fallback: location submission list
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "SELECT submission_id, name, description, status " +
-                    "FROM location_submission WHERE user_id = ? ORDER BY submission_id DESC")) {
-                ps.setInt(1, userId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        Map<String, Object> row = new HashMap<>();
-                        row.put("id", rs.getInt("submission_id"));
-                        row.put("name", rs.getString("name"));
-                        row.put("desc", rs.getString("description"));
-                        row.put("status", rs.getString("status"));
-                        locationList.add(row);
-                    }
-                }
-            } catch (Exception ignore) {}
         }
 
-        // ===== 6) Promotion list =====
-        if (businessId > 0) {
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "SELECT promotion_id, title, description, start_date, end_date, is_active, approval_status " +
-                    "FROM promotions WHERE business_id = ? ORDER BY promotion_id DESC")) {
-                ps.setInt(1, businessId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        Map<String, Object> row = new HashMap<>();
-                        row.put("id", rs.getInt("promotion_id"));
-                        row.put("title", rs.getString("title"));
-                        row.put("desc", rs.getString("description"));
-                        row.put("start", rs.getString("start_date"));
-                        row.put("end", rs.getString("end_date"));
-                        row.put("active", rs.getString("is_active"));
-                        row.put("status", rs.getString("approval_status"));
-                        promotionList.add(row);
-                    }
-                }
-            } catch (Exception ignore) {}
+        // 4. Promotions List
+        try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM promotions WHERE business_id = ? ORDER BY promotion_id DESC")) {
+            ps.setInt(1, businessId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("id", rs.getInt("promotion_id"));
+                row.put("title", rs.getString("title"));
+                row.put("desc", rs.getString("description"));
+                row.put("start", rs.getString("start_date"));
+                row.put("end", rs.getString("end_date"));
+                row.put("status", rs.getString("approval_status"));
+                promotionList.add(row);
+            }
         }
 
-        // ===== 7) Review list =====
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT u.username, l.name AS location_name, r.rating, r.review_text, r.review_date " +
-                "FROM reviews r " +
-                "JOIN users u ON u.id = r.user_id " +
-                "JOIN locations l ON l.location_id = r.location_id " +
-                "WHERE l.business_id = ? " +
-                "ORDER BY r.review_date DESC LIMIT 10")) {
+        // 5. Review List (Fixed SQL)
+        String revSql = "SELECT u.username, l.name AS location_name, r.rating, r.review_text, r.review_date " +
+                        "FROM reviews r " +
+                        "JOIN users u ON r.user_id = u.id " +
+                        "JOIN " + locTable + " l ON r.location_id = l.location_id " +
+                        "WHERE l.business_id = ? ORDER BY r.review_date DESC LIMIT 10";
+        try (PreparedStatement ps = conn.prepareStatement(revSql)) {
             ps.setInt(1, businessId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -196,31 +113,9 @@
                     reviewList.add(row);
                 }
             }
-        } catch (Exception e) {
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "SELECT u.username, l.name AS location_name, r.rating, r.review_text, r.review_date " +
-                    "FROM reviews r " +
-                    "JOIN users u ON u.id = r.user_id " +
-                    "JOIN locations l ON l.location_id = r.location_id " +
-                    "WHERE l.user_id = ? " +
-                    "ORDER BY r.review_date DESC LIMIT 10")) {
-                ps.setInt(1, userId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        Map<String, Object> row = new HashMap<>();
-                        row.put("username", rs.getString("username"));
-                        row.put("location", rs.getString("location_name"));
-                        row.put("rating", rs.getInt("rating"));
-                        row.put("text", rs.getString("review_text"));
-                        row.put("date", rs.getString("review_date"));
-                        reviewList.add(row);
-                    }
-                }
-            } catch (Exception ignore) {}
         }
-
-    } catch (Exception e) {
-        e.printStackTrace();
+    } catch (Exception e) { 
+        dbError = e.getMessage(); 
     }
 %>
 
@@ -577,7 +472,7 @@
                 </div>
             </div>
 
-            <a href="home.jsp" class="btn btn-outline">
+            <a href="index.jsp" class="btn btn-outline">
                 <i class="fas fa-home"></i> Home
             </a>
             <a href="user_profile.jsp" class="btn btn-outline">

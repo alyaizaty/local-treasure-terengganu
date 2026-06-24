@@ -61,6 +61,10 @@ public class ContentDashboardServlet extends HttpServlet {
         List<String> chartLabels = new ArrayList<>();
         List<Integer> loginData = new ArrayList<>();
         List<Integer> signupData = new ArrayList<>();
+        List<Integer> reviewData = new ArrayList<>();
+
+        String contextPath = request.getContextPath();
+        String defaultBg = contextPath + "/image/background.jpg";
 
         try (Connection conn = DBConnection.getConnection()) {
 
@@ -71,6 +75,7 @@ public class ContentDashboardServlet extends HttpServlet {
             totalBusinesses = count(conn, "SELECT COUNT(*) FROM businesses");
             totalComments = count(conn, "SELECT COUNT(*) FROM comments");
 
+            // 1. PENDING APPROVALS
             String sqlPending =
                 "SELECT s.submission_id, s.user_id, s.name, s.category, s.city, s.state, s.gmaps_link, " +
                 "(SELECT i.file_name FROM location_submission_images i " +
@@ -85,17 +90,12 @@ public class ContentDashboardServlet extends HttpServlet {
 
                 while (rs.next()) {
                     int id = rs.getInt("submission_id");
-                    String firstImg = rs.getString("first_image");
-
-                    String imgUrl = request.getContextPath() + "/image/no-image.png";
-                    if (firstImg != null && !firstImg.trim().isEmpty()) {
-                        imgUrl = request.getContextPath() + "/LocationImageServlet?file=" +
-                                URLEncoder.encode(firstImg.trim(), "UTF-8");
-                    }
+                    String imgUrl = resolveImageUrl(rs.getString("first_image"), contextPath);
 
                     pendingRows.append("<tr>");
                     pendingRows.append("<td>#").append(id).append("</td>");
-                    pendingRows.append("<td><img class='thumb' src='").append(imgUrl).append("'></td>");
+                    pendingRows.append("<td><img class='thumb' src='").append(imgUrl)
+                               .append("' onerror=\"this.onerror=null; this.src='").append(defaultBg).append("';\"></td>");
                     pendingRows.append("<td>").append(rs.getInt("user_id")).append("</td>");
                     pendingRows.append("<td><b>").append(h(rs.getString("name"))).append("</b></td>");
                     pendingRows.append("<td>").append(h(rs.getString("category"))).append("</td>");
@@ -112,13 +112,13 @@ public class ContentDashboardServlet extends HttpServlet {
                     pendingRows.append("</td>");
                     pendingRows.append("<td class='action-cell'>");
 
-                    pendingRows.append("<form method='post' action='").append(request.getContextPath()).append("/SubmissionDecisionServlet'>");
+                    pendingRows.append("<form method='post' action='").append(contextPath).append("/SubmissionDecisionServlet'>");
                     pendingRows.append("<input type='hidden' name='submissionId' value='").append(id).append("'>");
                     pendingRows.append("<input type='hidden' name='action' value='APPROVE'>");
                     pendingRows.append("<button class='btn btn-approve' type='submit' onclick=\"return confirm('Approve this submission?')\">Approve</button>");
                     pendingRows.append("</form>");
 
-                    pendingRows.append("<form method='post' action='").append(request.getContextPath()).append("/SubmissionDecisionServlet'>");
+                    pendingRows.append("<form method='post' action='").append(contextPath).append("/SubmissionDecisionServlet'>");
                     pendingRows.append("<input type='hidden' name='submissionId' value='").append(id).append("'>");
                     pendingRows.append("<input type='hidden' name='action' value='REJECT'>");
                     pendingRows.append("<button class='btn btn-reject' type='submit' onclick=\"return confirm('Reject this submission?')\">Reject</button>");
@@ -129,9 +129,13 @@ public class ContentDashboardServlet extends HttpServlet {
                 }
             }
 
+            // 2. ALL LOCATIONS
             String sqlLoc =
-                "SELECT location_id, category_id, name, description, image, is_featured " +
-                "FROM location ORDER BY location_id DESC";
+                "SELECT l.location_id, l.category_id, l.name AS loc_name, b.business_name, " +
+                "l.description, l.image, l.is_featured " +
+                "FROM location l " +
+                "LEFT JOIN businesses b ON l.business_id = b.business_id " +
+                "ORDER BY l.location_id DESC";
 
             try (PreparedStatement ps = conn.prepareStatement(sqlLoc);
                  ResultSet rs = ps.executeQuery()) {
@@ -139,20 +143,15 @@ public class ContentDashboardServlet extends HttpServlet {
                 while (rs.next()) {
                     int lid = rs.getInt("location_id");
                     int isFeatured = rs.getInt("is_featured");
-                    String img = rs.getString("image");
+                    String bName = rs.getString("business_name");
+                    String locName = rs.getString("loc_name");
+                    
+                    String imgUrl = resolveImageUrl(rs.getString("image"), contextPath);
 
-                    String imgUrl = request.getContextPath() + "/image/no-image.png";
-                    if (img != null && !img.trim().isEmpty()) {
-                        String clean = img.trim();
-                        String encoded = URLEncoder.encode(clean, "UTF-8");
-
-                        if (clean.toLowerCase().startsWith("sub_")) {
-                            imgUrl = request.getContextPath() + "/LocationImageServlet?file=" + encoded;
-                        } else if (clean.toLowerCase().startsWith("business_") || clean.equalsIgnoreCase("default_business.jpg")) {
-                            imgUrl = request.getContextPath() + "/uploads/" + encoded;
-                        } else {
-                            imgUrl = request.getContextPath() + "/image/" + encoded;
-                        }
+                    // Set Display Name to include Business Badge if applicable
+                    String finalName = h(locName);
+                    if (bName != null && !bName.trim().isEmpty()) {
+                        finalName = h(bName) + "<br><span class='badge-featured' style='background:#8b5cf6;color:white;font-size:10px;'>Registered Business</span>";
                     }
 
                     String desc = rs.getString("description");
@@ -162,16 +161,17 @@ public class ContentDashboardServlet extends HttpServlet {
                     StringBuilder row = new StringBuilder();
                     row.append("<tr>");
                     row.append("<td>#").append(lid).append("</td>");
-                    row.append("<td><img class='thumb' src='").append(imgUrl).append("'></td>");
+                    row.append("<td><img class='thumb' src='").append(imgUrl)
+                       .append("' onerror=\"this.onerror=null; this.src='").append(defaultBg).append("';\"></td>");
                     row.append("<td>").append(rs.getInt("category_id")).append("</td>");
-                    row.append("<td><b>").append(h(rs.getString("name"))).append("</b></td>");
+                    row.append("<td><b>").append(finalName).append("</b></td>");
                     row.append("<td>").append(h(preview)).append("</td>");
                     row.append("<td>").append(isFeatured == 1 ? "<span class='badge-featured'>Featured</span>" : "<span class='badge-normal'>Normal</span>").append("</td>");
 
                     row.append("<td class='action-cell'>");
-                    row.append("<a class='btn btn-view' href='").append(request.getContextPath()).append("/locationDetails?id=").append(lid).append("'>View</a>");
+                    row.append("<a class='btn btn-view' href='").append(contextPath).append("/locationDetails?id=").append(lid).append("'>View</a>");
 
-                    row.append("<form method='post' action='").append(request.getContextPath()).append("/FeatureLocationServlet'>");
+                    row.append("<form method='post' action='").append(contextPath).append("/FeatureLocationServlet'>");
                     row.append("<input type='hidden' name='locationId' value='").append(lid).append("'>");
                     row.append("<input type='hidden' name='currentStatus' value='").append(isFeatured).append("'>");
 
@@ -183,7 +183,7 @@ public class ContentDashboardServlet extends HttpServlet {
 
                     row.append("</form>");
 
-                    row.append("<form method='post' action='").append(request.getContextPath()).append("/DeleteLocationServlet'>");
+                    row.append("<form method='post' action='").append(contextPath).append("/DeleteLocationServlet'>");
                     row.append("<input type='hidden' name='locationId' value='").append(lid).append("'>");
                     row.append("<button class='btn btn-delete' type='submit' onclick=\"return confirm('Delete this location?')\">Delete</button>");
                     row.append("</form>");
@@ -199,6 +199,7 @@ public class ContentDashboardServlet extends HttpServlet {
                 }
             }
 
+            // 3. BUSINESSES
             String sqlBusiness =
                 "SELECT b.business_id, b.business_name, b.description, b.address, b.contact_phone, " +
                 "b.operating_hours, b.image, c.name AS category_name, u.username AS owner_username, " +
@@ -215,15 +216,9 @@ public class ContentDashboardServlet extends HttpServlet {
 
             try (PreparedStatement ps = conn.prepareStatement(sqlBusiness);
                  ResultSet rs = ps.executeQuery()) {
-
                 while (rs.next()) {
                     int bid = rs.getInt("business_id");
-                    String img = rs.getString("image");
-
-                    String imgUrl = request.getContextPath() + "/uploads/default_business.jpg";
-                    if (img != null && !img.trim().isEmpty()) {
-                        imgUrl = request.getContextPath() + "/uploads/" + URLEncoder.encode(img.trim(), "UTF-8");
-                    }
+                    String imgUrl = resolveImageUrl(rs.getString("image"), contextPath);
 
                     String desc = rs.getString("description");
                     String preview = desc == null ? "" : desc.trim();
@@ -231,7 +226,8 @@ public class ContentDashboardServlet extends HttpServlet {
 
                     businessRows.append("<tr>");
                     businessRows.append("<td>#").append(bid).append("</td>");
-                    businessRows.append("<td><img class='thumb' src='").append(imgUrl).append("'></td>");
+                    businessRows.append("<td><img class='thumb' src='").append(imgUrl)
+                                .append("' onerror=\"this.onerror=null; this.src='").append(defaultBg).append("';\"></td>");
                     businessRows.append("<td><b>").append(h(rs.getString("business_name"))).append("</b><br><small>").append(h(rs.getString("category_name"))).append("</small></td>");
                     businessRows.append("<td>").append(h(preview)).append("</td>");
                     businessRows.append("<td>").append(h(rs.getString("address"))).append("</td>");
@@ -239,13 +235,14 @@ public class ContentDashboardServlet extends HttpServlet {
                     businessRows.append("<td>@").append(h(rs.getString("owner_username"))).append("</td>");
                     businessRows.append("<td>").append(String.format(Locale.US, "%.1f", rs.getDouble("avg_rating"))).append(" / ").append(rs.getInt("total_reviews")).append(" reviews</td>");
                     businessRows.append("<td class='action-cell'>");
-                    businessRows.append("<a class='btn btn-view' href='").append(request.getContextPath()).append("/businessDetails?id=").append(bid).append("'>Details</a>");
-                    businessRows.append("<a class='btn btn-feature' href='").append(request.getContextPath()).append("/businessReviews?id=").append(bid).append("'>Reviews</a>");
+                    businessRows.append("<a class='btn btn-view' href='").append(contextPath).append("/businessDetails?id=").append(bid).append("'>Details</a>");
+                    businessRows.append("<a class='btn btn-feature' href='").append(contextPath).append("/businessReviews?id=").append(bid).append("'>Reviews</a>");
                     businessRows.append("</td>");
                     businessRows.append("</tr>");
                 }
             }
 
+            // 4. REVIEWS
             String sqlReviews =
                 "SELECT r.review_id, r.rating, r.review_text, r.review_date, " +
                 "COALESCE(u.username, CONCAT('User #', r.user_id)) AS username, " +
@@ -259,7 +256,6 @@ public class ContentDashboardServlet extends HttpServlet {
 
             try (PreparedStatement ps = conn.prepareStatement(sqlReviews);
                  ResultSet rs = ps.executeQuery()) {
-
                 while (rs.next()) {
                     String target = rs.getString("business_name");
                     if (target == null || target.trim().isEmpty()) target = rs.getString("location_name");
@@ -276,6 +272,7 @@ public class ContentDashboardServlet extends HttpServlet {
                 }
             }
 
+            // 5. COMMENTS
             String sqlComments =
                 "SELECT c.comment_id, c.comment_text, c.comment_date, " +
                 "COALESCE(u.username, CONCAT('User #', c.user_id)) AS username, " +
@@ -289,7 +286,6 @@ public class ContentDashboardServlet extends HttpServlet {
 
             try (PreparedStatement ps = conn.prepareStatement(sqlComments);
                  ResultSet rs = ps.executeQuery()) {
-
                 while (rs.next()) {
                     String target = rs.getString("business_name");
                     if (target == null || target.trim().isEmpty()) target = rs.getString("location_name");
@@ -305,17 +301,20 @@ public class ContentDashboardServlet extends HttpServlet {
                 }
             }
 
+            // 6. ANALYTICS (Login, Sign-Up, and Reviews)
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DAY_OF_MONTH, -6);
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
             Map<String, Integer> loginMap = new LinkedHashMap<>();
             Map<String, Integer> signupMap = new LinkedHashMap<>();
+            Map<String, Integer> reviewMap = new LinkedHashMap<>();
 
             for (int i = 0; i < 7; i++) {
                 String d = sdf.format(cal.getTime());
                 loginMap.put(d, 0);
                 signupMap.put(d, 0);
+                reviewMap.put(d, 0);
                 cal.add(Calendar.DAY_OF_MONTH, 1);
             }
 
@@ -328,7 +327,6 @@ public class ContentDashboardServlet extends HttpServlet {
 
             try (PreparedStatement ps = conn.prepareStatement(sqlActivity);
                  ResultSet rs = ps.executeQuery()) {
-
                 while (rs.next()) {
                     String d = rs.getString("d");
                     String type = rs.getString("activity_type");
@@ -340,13 +338,38 @@ public class ContentDashboardServlet extends HttpServlet {
                         signupMap.put(d, total);
                     }
                 }
-            } catch (Exception ignore) {
+            } catch (Exception ignore) {}
+
+            boolean hasSignups = false;
+            for (int val : signupMap.values()) if (val > 0) hasSignups = true;
+            
+            if (!hasSignups) {
+                try {
+                    String fbSql = "SELECT DATE(created_at) AS d, COUNT(*) AS total FROM users WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(created_at)";
+                    try (PreparedStatement ps = conn.prepareStatement(fbSql); ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            String d = rs.getString("d");
+                            if (signupMap.containsKey(d)) signupMap.put(d, rs.getInt("total"));
+                        }
+                    }
+                } catch (Exception ignore) {}
             }
+
+            try {
+                String revSql = "SELECT DATE(review_date) AS d, COUNT(*) AS total FROM reviews WHERE review_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(review_date)";
+                try (PreparedStatement ps = conn.prepareStatement(revSql); ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String d = rs.getString("d");
+                        if (reviewMap.containsKey(d)) reviewMap.put(d, rs.getInt("total"));
+                    }
+                }
+            } catch (Exception ignore) {}
 
             for (String d : loginMap.keySet()) {
                 chartLabels.add(d);
                 loginData.add(loginMap.get(d));
                 signupData.add(signupMap.get(d));
+                reviewData.add(reviewMap.get(d));
             }
 
         } catch (Exception e) {
@@ -375,8 +398,25 @@ public class ContentDashboardServlet extends HttpServlet {
         request.setAttribute("chartLabels", toJsonStringArray(chartLabels));
         request.setAttribute("loginData", loginData.toString());
         request.setAttribute("signupData", signupData.toString());
+        request.setAttribute("reviewData", reviewData.toString());
 
         request.getRequestDispatcher("/content_dashboard.jsp").forward(request, response);
+    }
+
+    // HELPER METHOD: Standardized Image Routing
+    private String resolveImageUrl(String img, String contextPath) throws Exception {
+        String imgUrl = contextPath + "/image/background.jpg"; // Default
+        if (img != null && !img.trim().isEmpty()) {
+            String clean = img.trim();
+            if (clean.startsWith("sub_")) {
+                imgUrl = contextPath + "/LocationImageServlet?file=" + URLEncoder.encode(clean, "UTF-8");
+            } else if (clean.startsWith("business_")) {
+                imgUrl = contextPath + "/uploads/" + URLEncoder.encode(clean, "UTF-8");
+            } else {
+                imgUrl = contextPath + "/image/" + clean; // Fallback to standard images folder
+            }
+        }
+        return imgUrl;
     }
 
     private int count(Connection conn, String sql) {

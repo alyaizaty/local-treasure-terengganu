@@ -1,16 +1,12 @@
 package controller;
 
-import dao.BusinessDAO;
-import model.Business;
 import util.DBConnection;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
-import java.sql.Connection;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 @WebServlet("/businessDetails")
 public class BusinessDetailsServlet extends HttpServlet {
@@ -18,59 +14,70 @@ public class BusinessDetailsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String idStr = request.getParameter("id");
-
-        // 1. Check if the ID parameter is completely missing or empty
         if (idStr == null || idStr.trim().isEmpty()) {
-            System.err.println("BusinessDetailsServlet: ID parameter is missing.");
-            response.sendRedirect("home.jsp?msg=Missing+Business+ID");
+            response.sendRedirect("home.jsp");
             return;
         }
 
+        int businessId;
         try {
-            // Attempt to parse the ID into an integer
-            int businessId = Integer.parseInt(idStr.trim());
-
-            try (Connection conn = DBConnection.getConnection()) {
-                BusinessDAO dao = new BusinessDAO();
-                Business business = dao.getBusinessById(conn, businessId);
-
-                // 2. Check if the database query returned null (business doesn't exist)
-                if (business == null) {
-                    System.err.println("BusinessDetailsServlet: No business found for ID " + businessId);
-                    response.sendRedirect("home.jsp?msg=Business+Not+Found");
-                    return;
-                }
-
-                // Retrieve optional gallery images and reviews
-                List<String> galleryImages = dao.getBusinessImages(conn, businessId);
-                List<Map<String, Object>> reviewsList = dao.getReviewsForBusiness(conn, businessId);
-
-                // 3. Set attributes to be passed to the JSP
-                request.setAttribute("business", business);
-                request.setAttribute("galleryImages", galleryImages);
-                request.setAttribute("reviewsList", reviewsList);
-
-                // 4. Forward to the JSP page
-                // Note: If businessDetails.jsp does not exist, this line throws a ServletException
-                request.getRequestDispatcher("businessDetails.jsp").forward(request, response);
-            }
-            
-        } catch (NumberFormatException e) {
-            // Triggered if the user passed something like ?id=abc instead of a number
-            System.err.println("BusinessDetailsServlet: Invalid ID format -> " + idStr);
-            response.sendRedirect("home.jsp?msg=Invalid+Business+ID");
-            
-        } catch (ServletException e) {
-            // Triggered if businessDetails.jsp is MISSING or has Java/HTML syntax errors inside it.
-            // By throwing it, Tomcat will show you the exact JSP error on the screen instead of silently refreshing.
-            System.err.println("BusinessDetailsServlet: JSP Forwarding Error. Check if businessDetails.jsp exists and compiles.");
-            throw e; 
-            
+            businessId = Integer.parseInt(idStr);
         } catch (Exception e) {
-            // Triggered by Database/SQL issues (e.g., missing tables, bad DB connection)
-            System.err.println("BusinessDetailsServlet: Database or Server Exception occurred.");
-            e.printStackTrace(); // Read your Tomcat/Glassfish console to see this error
-            response.sendRedirect("home.jsp?msg=Internal+Server+Error");
+            response.sendRedirect("home.jsp");
+            return;
+        }
+
+        Map<String, Object> business = new HashMap<>();
+        List<Map<String, Object>> promotions = new ArrayList<>();
+        
+        try (Connection conn = DBConnection.getConnection()) {
+            
+            // 1. Fetch the exact Business details
+            String sqlBiz = "SELECT b.*, c.name AS category_name FROM businesses b LEFT JOIN categories c ON b.category_id = c.category_id WHERE b.business_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sqlBiz)) {
+                ps.setInt(1, businessId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        business.put("id", rs.getInt("business_id"));
+                        business.put("name", rs.getString("business_name"));
+                        business.put("desc", rs.getString("description"));
+                        business.put("address", rs.getString("address"));
+                        business.put("phone", rs.getString("contact_phone"));
+                        business.put("hours", rs.getString("operating_hours"));
+                        business.put("image", rs.getString("image"));
+                        business.put("category", rs.getString("category_name") != null ? rs.getString("category_name") : "General");
+                    } else {
+                        response.sendRedirect("home.jsp");
+                        return;
+                    }
+                }
+            }
+
+            // 2. Fetch Active Promotions
+            String sqlPromo = "SELECT * FROM promotions WHERE business_id = ? AND (is_active = 1 OR is_active = '1' OR is_active = 'Yes')";
+            try (PreparedStatement ps = conn.prepareStatement(sqlPromo)) {
+                ps.setInt(1, businessId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, Object> p = new HashMap<>();
+                        p.put("title", rs.getString("title"));
+                        p.put("desc", rs.getString("description"));
+                        p.put("start", rs.getString("start_date"));
+                        p.put("end", rs.getString("end_date"));
+                        promotions.add(p);
+                    }
+                }
+            }
+
+            // Send to JSP
+            request.setAttribute("business", business);
+            request.setAttribute("promotionsList", promotions);
+            request.getRequestDispatcher("business_details.jsp").forward(request, response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setContentType("text/html");
+            response.getWriter().println("<h3>Database Error: " + e.getMessage() + "</h3>");
         }
     }
 }

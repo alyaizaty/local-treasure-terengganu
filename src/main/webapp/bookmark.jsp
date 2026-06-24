@@ -134,13 +134,13 @@
 
         <!-- Left menu -->
         <div class="navbar-left">
-            <a href="home.jsp" class="nav-link">Explore</a>
+            <a href="index.jsp" class="nav-link">Explore</a>
             <a href="bookmark.jsp" class="nav-link active">Bookmark</a>
             <a href="treasures.jsp" class="nav-link">Treasures</a>
         </div>
 
         <!-- Brand -->
-        <a href="home.jsp" class="navbar-brand">
+        <a href="index.jsp" class="navbar-brand">
             <div class="brand-main">Local Treasure Terengganu</div>
             <div class="brand-sub">DISCOVER THE HIDDEN GEMS</div>
         </a>
@@ -171,7 +171,7 @@
 
     <!-- Mobile menu -->
     <div class="navbar-mobile-menu" id="navbarMobileMenu">
-        <a href="home.jsp" class="nav-link">Explore</a>
+        <a href="index.jsp" class="nav-link">Explore</a>
         <a href="bookmark.jsp" class="nav-link active">Bookmark</a>
         <a href="treasures.jsp" class="nav-link">Treasures</a>
         <a href="plan-visit.jsp" class="nav-link">Plan Visit</a>

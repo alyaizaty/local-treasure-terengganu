@@ -8,7 +8,7 @@
     int[] dist = (int[]) request.getAttribute("dist");
 
     if (business == null || targetLocationIdObj == null) {
-        response.sendRedirect("home.jsp");
+        response.sendRedirect("index.jsp");
         return;
     }
 
@@ -20,7 +20,7 @@
 
     int businessId = (Integer) business.get("id");
     String businessName = business.get("name") != null ? (String) business.get("name") : "Business";
-    String mainImage = business.get("image") != null ? (String) business.get("image") : "default_business.jpg";
+    String mainImage = business.get("image") != null ? (String) business.get("image") : "background.jpg";
     String categoryName = business.get("category_name") != null ? (String) business.get("category_name") : "General";
 
     double avgRating = business.get("avg_rating") != null ? (Double) business.get("avg_rating") : 0.0;
@@ -37,7 +37,18 @@
         if (dist[r] > maxCount) maxCount = dist[r];
     }
 
-    String imgUrl = request.getContextPath() + "/uploads/" + mainImage;
+    // SMART IMAGE URL FOR HERO
+    String imgUrl = request.getContextPath() + "/image/background.jpg";
+    if (mainImage != null && !mainImage.trim().isEmpty()) {
+        if (mainImage.startsWith("sub_")) {
+            imgUrl = request.getContextPath() + "/LocationImageServlet?file=" + URLEncoder.encode(mainImage.trim(), "UTF-8");
+        } else if (mainImage.startsWith("business_")) {
+            imgUrl = request.getContextPath() + "/uploads/" + URLEncoder.encode(mainImage.trim(), "UTF-8");
+        } else {
+            imgUrl = request.getContextPath() + "/image/" + mainImage.trim();
+        }
+    }
+
     String msg = request.getParameter("msg");
 %>
 
@@ -47,16 +58,10 @@
     <meta charset="UTF-8">
     <title><%= businessName %> Reviews</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
-        .nav-guest{ display:inline-flex; align-items:center; gap:8px; color:#fff; font-weight:700; }
-        .guest-badge{ width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,0.18); border:2px solid #f8c471; font-weight:800; }
-        .guest-text{ opacity:.9; }
-
         .wrap{ max-width:1050px; margin:20px auto; padding:0 16px; }
         .back{ display:inline-flex; gap:8px; align-items:center; color:#111; text-decoration:none; margin:10px 0; font-weight:800; }
         .hero{ background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 10px 24px rgba(0,0,0,.10); border:1px solid #eee; }
@@ -64,18 +69,13 @@
         .hero-body{ padding:16px 18px; }
         .row{ display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; align-items:flex-end; }
         .title{ margin:0; font-size:26px; font-weight:900; }
-
         .meta-metrics{ display:inline-flex; align-items:center; gap:12px; margin-top:10px; font-size:14px; font-weight:700; color:#4b5563; background:#f3f4f6; padding:8px 16px; border-radius:999px; }
         .meta-metrics span.sep{ color:#d1d5db; }
-
         .btn{ display:inline-flex; gap:8px; align-items:center; padding:10px 14px; border-radius:12px; border:1px solid rgba(0,0,0,.12); background:#111; color:#fff; text-decoration:none; font-weight:900; }
-
         .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:18px; }
         @media(max-width:900px){ .grid2{ grid-template-columns:1fr; } }
-
         .card{ background:#fff; border-radius:18px; padding:16px; box-shadow:0 10px 24px rgba(0,0,0,.08); border:1px solid #eee; }
         .card h3{ margin:0 0 10px; font-size:18px; font-weight:900; }
-
         .ratingBox{ display:flex; gap:16px; align-items:flex-start; }
         .big{ font-size:36px; font-weight:1000; line-height:1; }
         .stars{ color:#111; letter-spacing:2px; }
@@ -83,11 +83,9 @@
         .bar{ flex:1; height:8px; background:#e5e7eb; border-radius:999px; overflow:hidden; }
         .bar > div{ height:100%; background:#111; width:0%; }
         .muted{ color:#6b7280; font-weight:700; }
-
         .btnLight{ background:#fff; color:#111; border:1px solid rgba(0,0,0,.12); border-radius:12px; padding:10px 14px; font-weight:900; cursor:pointer; }
-        .reviewForm textarea{ width:100%; min-height:90px; border-radius:12px; border:1px solid #e5e7eb; padding:10px; box-sizing:border-box; resize:vertical; }
+        .reviewForm textarea{ width:100%; min-height:90px; border-radius:12px; border:1px solid #e5e7eb; padding:10px; box-sizing:border-box; resize:vertical; font-family:inherit;}
         .reviewForm input[type="file"]{ width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; display:block; }
-
         .reviewItem{ border-top:1px solid #eee; padding-top:14px; margin-top:14px; }
         .reviewHead{ display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; }
         .reviewName{ font-weight:900; }
@@ -97,57 +95,37 @@
         .commentBox{ margin-top:10px; padding-left:14px; border-left:3px solid #eee; }
         .commentItem{ margin:8px 0; }
         .commentForm{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-        .commentForm input{ flex:1; min-width:220px; border-radius:12px; border:1px solid #e5e7eb; padding:10px; }
-
+        .commentForm input{ flex:1; min-width:220px; border-radius:12px; border:1px solid #e5e7eb; padding:10px; font-family:inherit;}
         .gallery{ margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; }
         .gallery img{ width:160px; height:120px; object-fit:cover; border-radius:12px; border:1px solid #eee; }
         .msg{ margin:10px 0; padding:10px 12px; border-radius:12px; background:#ecfdf5; border:1px solid #10b98133; color:#065f46; font-weight:800; }
+        .navbar{ background:#000; padding:15px 0; }
     </style>
 </head>
 
-<body>
+<body style="background-color: #f4f7f6; margin: 0; font-family: Arial, sans-serif;">
 
-<nav class="navbar">
-    <div class="container navbar-container">
-        <div class="navbar-left">
-            <a href="home.jsp" class="nav-link">Explore</a>
-            <a href="bookmark.jsp" class="nav-link">Bookmark</a>
-            <a href="treasures.jsp" class="nav-link">Treasures</a>
-        </div>
-
-        <a href="home.jsp" class="navbar-brand">
-            <div class="brand-main">Local Treasure Terengganu</div>
-            <div class="brand-sub">DISCOVER THE HIDDEN GEMS</div>
-        </a>
-
-        <div class="navbar-right">
-            <a href="plan-visit.jsp" class="nav-link">Plan Visit</a>
-            <a href="about.jsp" class="nav-link">About</a>
-
-            <% if (loggedIn) { %>
-                <a href="user_profile.jsp" class="nav-profile">
-                    <img src="<%= profileImgUrl %>" alt="Profile" class="nav-profile-img">
-                    <span><%= username == null ? "Profile" : username %></span>
-                </a>
-                <a href="<%= request.getContextPath() %>/LogoutServlet" class="nav-link">Logout</a>
-            <% } else { %>
-                <div class="nav-guest">
-                    <div class="guest-badge">G</div>
-                    <span class="guest-text">Guest</span>
-                </div>
-                <a href="login.jsp" class="nav-link">Login</a>
-                <a href="sign_up.jsp?from=businessReviews&id=<%= businessId %>" class="nav-link">Sign Up</a>
-            <% } %>
-        </div>
-
-        <button class="navbar-toggle" id="navbarToggle" type="button">
-            <i class="fas fa-bars"></i>
-        </button>
+<div style="background:#000; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; color:#fff;">
+    <div style="display:flex; gap:20px;">
+        <a href="index.jsp" style="color:#fff; text-decoration:none; font-weight:bold;">Explore</a>
+        <a href="bookmark.jsp" style="color:#fff; text-decoration:none; font-weight:bold;">Bookmark</a>
+        <a href="treasures.jsp" style="color:#fff; text-decoration:none; font-weight:bold;">Treasures</a>
     </div>
-</nav>
+    <div style="text-align:center;">
+        <div style="font-size:20px; font-weight:900;">Local Treasure Terengganu</div>
+        <div style="font-size:10px; color:#f59e0b; letter-spacing:1px;">DISCOVER THE HIDDEN GEMS</div>
+    </div>
+    <div style="display:flex; gap:20px; align-items:center;">
+        <% if(loggedIn) { %>
+            <span><img src="<%= profileImgUrl %>" style="width:30px; height:30px; border-radius:50%; vertical-align:middle; margin-right:8px;"> <%= username %></span>
+            <a href="<%= request.getContextPath()%>/LogoutServlet" style="color:#fff; text-decoration:none; font-weight:bold;">Logout</a>
+        <% } else { %>
+            <a href="login.jsp" style="color:#fff; text-decoration:none; font-weight:bold;">Login</a>
+        <% } %>
+    </div>
+</div>
 
 <div class="wrap">
-
     <a class="back" href="<%= request.getContextPath() %>/businessDetails?id=<%= businessId %>">
         <i class="fas fa-arrow-left"></i> Back to Business Details
     </a>
@@ -157,24 +135,20 @@
     <% } %>
 
     <div class="hero">
-        <img src="<%= imgUrl %>" alt="<%= businessName %>">
-
+        <img src="<%= imgUrl %>" onerror="this.onerror=null; this.src='<%= request.getContextPath() %>/image/background.jpg';" alt="<%= businessName %>">
         <div class="hero-body">
             <div class="row">
                 <div>
                     <span style="display:inline-block; background:#667eea; color:white; padding:4px 12px; border-radius:20px; font-weight:900; font-size:12px; text-transform:uppercase; margin-bottom:8px;">
                         <i class="fas fa-store"></i> <%= categoryName %>
                     </span>
-
                     <h1 class="title"><%= businessName %> Reviews</h1>
-
                     <div class="meta-metrics">
                         <span><i class="fas fa-star" style="color:#f59e0b;"></i> <%= String.format(Locale.US, "%.1f", avgRating) %></span>
                         <span class="sep">|</span>
                         <span><i class="fas fa-comment"></i> <%= totalReviews %> reviews</span>
                     </div>
                 </div>
-
                 <a class="btn" href="#writeReviewSection">
                     <i class="fas fa-pen"></i> Write Review
                 </a>
@@ -185,7 +159,6 @@
     <div class="grid2">
         <div class="card">
             <h3>Ratings Breakdown</h3>
-
             <div class="ratingBox">
                 <div>
                     <div class="big"><%= String.format(Locale.US, "%.1f", avgRating) %></div>
@@ -199,7 +172,6 @@
                     </div>
                     <div class="muted" style="margin-top:4px;"><%= totalReviews %> reviews</div>
                 </div>
-
                 <div style="flex:1;">
                     <%
                         for (int r = 5; r >= 1; r--) {
@@ -218,37 +190,31 @@
 
         <div class="card" id="writeReviewSection">
             <h3>Write a Review</h3>
-
             <% if (!loggedIn) { %>
                 <div class="muted">
-                    Please <a href="login.jsp?from=businessReviews&id=<%= businessId %>">login</a> to write a review.
+                    Please <a href="login.jsp?redirect=business_reviews.jsp?id=<%= businessId %>" style="color:#111; text-decoration:underline;">login</a> to write a review.
                 </div>
             <% } else { %>
-                <form class="reviewForm"
-                      method="post"
-                      action="<%= request.getContextPath() %>/ReviewActionServlet"
-                      enctype="multipart/form-data">
-
+                <form class="reviewForm" method="post" action="<%= request.getContextPath() %>/ReviewActionServlet" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="addOrUpdateReview">
                     <input type="hidden" name="locationId" value="<%= targetLocationId %>">
                     <input type="hidden" name="customRedirect" value="businessReviews?id=<%= businessId %>">
-                    <input type="hidden" name="successRedirect" value="businessReviews?id=<%= businessId %>">
-
+                    
                     <div class="muted" style="margin-bottom:8px;">Your Rating</div>
-                    <select name="rating" style="width:100%; border-radius:12px; padding:10px; border:1px solid #e5e7eb; background:#fff; font-weight:bold;">
+                    <select name="rating" style="width:100%; border-radius:12px; padding:10px; border:1px solid #e5e7eb; background:#fff; font-weight:bold; font-family:inherit;">
                         <option value="5">5 - Excellent</option>
                         <option value="4">4 - Good</option>
                         <option value="3">3 - Okay</option>
                         <option value="2">2 - Bad</option>
                         <option value="1">1 - Terrible</option>
                     </select>
-
+                    
                     <div class="muted" style="margin:10px 0 6px;">Review Description</div>
                     <textarea name="reviewText" placeholder="Share details of your experience..." required></textarea>
-
+                    
                     <div class="muted" style="margin:10px 0 6px;">Upload Images (optional)</div>
                     <input type="file" name="reviewImages" accept="image/*" multiple>
-
+                    
                     <div style="margin-top:12px;">
                         <button class="btnLight" type="submit">Post Review</button>
                     </div>
@@ -259,11 +225,10 @@
 
     <div class="card" style="margin-top:16px;" id="reviewsSection">
         <h3>All User Reviews</h3>
-
         <%
             try (Connection conn = DBConnection.getConnection()) {
                 String reviewSql =
-                    "SELECT r.review_id, r.user_id, r.rating, r.review_text, r.review_date, " +
+                    "SELECT r.review_id, r.user_id, r.rating, r.review_text, r.review_date, r.image AS main_review_image, " +
                     "COALESCE(u.username, CONCAT('User #', r.user_id)) AS display_name, " +
                     "(SELECT COUNT(*) FROM likes lk WHERE lk.review_id = r.review_id) AS like_count, " +
                     (loggedIn
@@ -273,32 +238,26 @@
                     "LEFT JOIN users u ON u.id = r.user_id " +
                     "WHERE r.location_id = ? " +
                     "ORDER BY r.review_id DESC";
-
                 try (PreparedStatement psReview = conn.prepareStatement(reviewSql)) {
                     int idx = 1;
-
                     if (loggedIn) {
                         psReview.setInt(idx++, userId);
                     }
-
                     psReview.setInt(idx, targetLocationId);
-
                     try (ResultSet rs = psReview.executeQuery()) {
                         boolean hasReviews = false;
-
                         while (rs.next()) {
                             hasReviews = true;
-
                             int reviewId = rs.getInt("review_id");
                             int reviewOwnerId = rs.getInt("user_id");
                             int rating = rs.getInt("rating");
                             String rText = rs.getString("review_text");
                             String rDate = rs.getString("review_date");
                             String rUser = rs.getString("display_name");
+                            String mainReviewImage = rs.getString("main_review_image");
                             int likeCount = rs.getInt("like_count");
                             boolean userLiked = rs.getInt("user_liked") > 0;
         %>
-
                             <div class="reviewItem" id="review-<%= reviewId %>">
                                 <div class="reviewHead">
                                     <div>
@@ -308,10 +267,9 @@
                                             • <%= rDate %>
                                         </div>
                                     </div>
-
                                     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                                         <% if (!loggedIn) { %>
-                                            <a class="likeBtn" href="login.jsp?from=businessReviews&id=<%= businessId %>">
+                                            <a class="likeBtn" href="login.jsp">
                                                 <i class="fas fa-thumbs-up"></i> <%= likeCount %>
                                             </a>
                                         <% } else { %>
@@ -320,20 +278,17 @@
                                                 <input type="hidden" name="locationId" value="<%= targetLocationId %>">
                                                 <input type="hidden" name="reviewId" value="<%= reviewId %>">
                                                 <input type="hidden" name="customRedirect" value="businessReviews?id=<%= businessId %>#review-<%= reviewId %>">
-
                                                 <button type="submit" class="likeBtn <%= userLiked ? "liked" : "" %>">
                                                     <i class="fas fa-thumbs-up"></i> <%= likeCount %>
                                                 </button>
                                             </form>
                                         <% } %>
-
                                         <% if (loggedIn && userId.intValue() == reviewOwnerId) { %>
                                             <form method="post" action="<%= request.getContextPath() %>/ReviewActionServlet" style="display:inline;">
                                                 <input type="hidden" name="action" value="deleteReview">
                                                 <input type="hidden" name="locationId" value="<%= targetLocationId %>">
                                                 <input type="hidden" name="reviewId" value="<%= reviewId %>">
                                                 <input type="hidden" name="customRedirect" value="businessReviews?id=<%= businessId %>">
-
                                                 <button type="submit" class="likeBtn danger" onclick="return confirm('Delete this review?');">
                                                     <i class="fas fa-trash"></i> Delete
                                                 </button>
@@ -341,32 +296,37 @@
                                         <% } %>
                                     </div>
                                 </div>
-
-                                <p style="margin:10px 0 0; color:#374151; line-height:1.6;">
+                                <p style="margin:10px 0; color:#374151; line-height:1.6;">
                                     <%= rText == null ? "" : rText %>
                                 </p>
+                                
+                                <%-- DISPLAY MAIN REVIEW IMAGE SAFELY --%>
+                                <% if(mainReviewImage != null && !mainReviewImage.trim().isEmpty()) { %>
+                                    <div style="margin-top:10px; margin-bottom: 10px;">
+                                        <img src="<%= request.getContextPath() %>/ReviewImageServlet?file=<%= URLEncoder.encode(mainReviewImage, "UTF-8") %>" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #eee; object-fit: cover;" alt="Main Review Image">
+                                    </div>
+                                <% } %>
 
-   <div class="gallery">
-    <%
-        String imgQuery = "SELECT file_name FROM review_images WHERE review_id=? ORDER BY image_id ASC";
-        try (PreparedStatement ips = conn.prepareStatement(imgQuery)) {
-            ips.setInt(1, reviewId);
-
-            try (ResultSet irs = ips.executeQuery()) {
-                while (irs.next()) {
-                    String fn = irs.getString("file_name");
-    %>
-                    <img src="<%= request.getContextPath() %>/BusinessReviewImageServlet?file=<%= URLEncoder.encode(fn, "UTF-8") %>" alt="business review image">
-    <%
-                }
-            }
-        }
-    %>
-</div>
-
+                                <%-- DISPLAY GALLERY IMAGES --%>
+                                <div class="gallery">
+                                <%
+                                    String imgQuery = "SELECT file_name FROM review_images WHERE review_id=? ORDER BY image_id ASC";
+                                    try (PreparedStatement ips = conn.prepareStatement(imgQuery)) {
+                                        ips.setInt(1, reviewId);
+                                        try (ResultSet irs = ips.executeQuery()) {
+                                            while (irs.next()) {
+                                                String fn = irs.getString("file_name");
+                                %>
+                                                <img src="<%= request.getContextPath() %>/ReviewImageServlet?file=<%= URLEncoder.encode(fn, "UTF-8") %>" alt="Gallery Review Image">
+                                <%
+                                            }
+                                        }
+                                    }
+                                %>
+                                </div>
+                                
                                 <div class="commentBox">
                                     <div class="muted" style="font-weight:900;">Comments</div>
-
                                     <%
                                         String commentSql =
                                             "SELECT c.comment_text, c.comment_date, " +
@@ -374,13 +334,10 @@
                                             "FROM comments c " +
                                             "LEFT JOIN users u2 ON u2.id = c.user_id " +
                                             "WHERE c.review_id=? ORDER BY c.comment_id ASC";
-
                                         try (PreparedStatement cps = conn.prepareStatement(commentSql)) {
                                             cps.setInt(1, reviewId);
-
                                             try (ResultSet crs = cps.executeQuery()) {
                                                 boolean hasComments = false;
-
                                                 while (crs.next()) {
                                                     hasComments = true;
                                     %>
@@ -391,35 +348,26 @@
                                                     </div>
                                     <%
                                                 }
-
                                                 if (!hasComments) {
                                                     out.println("<div class='muted' style='margin-top:6px;'>No comments yet.</div>");
                                                 }
                                             }
                                         }
                                     %>
-
                                     <% if (loggedIn) { %>
                                         <form class="commentForm" method="post" action="<%= request.getContextPath() %>/ReviewActionServlet">
                                             <input type="hidden" name="action" value="addComment">
                                             <input type="hidden" name="locationId" value="<%= targetLocationId %>">
                                             <input type="hidden" name="reviewId" value="<%= reviewId %>">
                                             <input type="hidden" name="customRedirect" value="businessReviews?id=<%= businessId %>#review-<%= reviewId %>">
-
                                             <input type="text" name="commentText" placeholder="Write a comment..." required>
                                             <button class="btnLight" type="submit">Post</button>
                                         </form>
-                                    <% } else { %>
-                                        <div class="muted" style="margin-top:10px;">
-                                            Please <a href="login.jsp?from=businessReviews&id=<%= businessId %>">login</a> to comment.
-                                        </div>
                                     <% } %>
                                 </div>
                             </div>
-
         <%
                         }
-
                         if (!hasReviews) {
                             out.println("<div class='muted'>No reviews yet. Be the first to review this business!</div>");
                         }
@@ -431,26 +379,6 @@
         %>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const navbarToggle = document.getElementById('navbarToggle');
-        const navbarMobileMenu = document.getElementById('navbarMobileMenu');
-
-        if (navbarToggle && navbarMobileMenu) {
-            navbarToggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                navbarMobileMenu.classList.toggle('active');
-            });
-        }
-
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.navbar-container') && !event.target.closest('.navbar-mobile-menu')) {
-                if (navbarMobileMenu) navbarMobileMenu.classList.remove('active');
-            }
-        });
-    });
-</script>
 
 </body>
 </html>

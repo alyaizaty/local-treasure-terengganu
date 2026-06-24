@@ -288,7 +288,7 @@
         </div>
 
         <div class="mini-actions">
-            <a class="btnTop" href="home.jsp">
+            <a class="btnTop" href="index.jsp">
                 <i class="fas fa-arrow-left"></i> Back to Home
             </a>
             <a class="btnTop" href="login.jsp">
@@ -397,7 +397,7 @@
         </div>
 
         <div style="display:flex; gap:14px; flex-wrap:wrap;">
-            <a href="home.jsp">Home</a>
+            <a href="index.jsp">Home</a>
             <a href="treasures.jsp">Treasures</a>
             <a href="about.jsp">About Us</a>
             <a href="plan-visit.jsp">Plan Your Visit</a>
