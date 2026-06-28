@@ -66,10 +66,8 @@
             </thead>
             <tbody>
             <%
-                try (Connection conn = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/ltwbs","root","")) {
-
-                    String sql =
+               try (Connection conn = util.DBConnection.getConnection()) {
+                   String sql =
                         "SELECT submission_id, name, category, status, created_at " +
                         "FROM location_submission WHERE user_id=? " +
                         "ORDER BY submission_id DESC";
