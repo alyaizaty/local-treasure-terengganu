@@ -4,7 +4,6 @@
 <%
     Integer userId = (Integer) session.getAttribute("userId");
 
-    // ===== PROTECT PAGE =====
     if (userId == null) {
         response.sendRedirect("sign_up.jsp?from=bookmark");
         return;
@@ -20,15 +19,12 @@
         ? (request.getContextPath() + "/ProfileImageServlet?file=" + profilePicture)
         : "image/profile.jpeg";
 
-    // ===== NOTIFICATION COUNT (for navbar 🔔 badge) =====
     int notiLikes = 0;
     int notiComments = 0;
     int notiTotal = 0;
 
-    try (Connection connN = DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/ltwbs", "root", "")) {
+    try (Connection connN = util.DBConnection.getConnection()) {
 
-        // Likes on your reviews (exclude your own likes)
         try (PreparedStatement ps = connN.prepareStatement(
                 "SELECT COUNT(*) c " +
                 "FROM likes lk " +
@@ -41,7 +37,6 @@
             }
         } catch (Exception ignore) {}
 
-        // Comments on your reviews (exclude your own comments)
         try (PreparedStatement ps = connN.prepareStatement(
                 "SELECT COUNT(*) c " +
                 "FROM comments c " +
@@ -68,7 +63,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* 🔔 Notification icon in navbar */
         .nav-noti{
             position: relative;
             display:inline-flex;
@@ -102,8 +96,6 @@
             justify-content:center;
             line-height:1;
         }
-
-        /* ❤️ Love remove bookmark button */
         .love-btn{
             width:44px;
             height:44px;
@@ -128,27 +120,20 @@
 
 <body>
 
-<!-- ===== NAVBAR (About dibuang, diganti 🔔) ===== -->
 <nav class="navbar">
     <div class="container navbar-container">
-
-        <!-- Left menu -->
         <div class="navbar-left">
             <a href="index.jsp" class="nav-link">Explore</a>
             <a href="bookmark.jsp" class="nav-link active">Bookmark</a>
             <a href="treasures.jsp" class="nav-link">Treasures</a>
         </div>
 
-        <!-- Brand -->
         <a href="index.jsp" class="navbar-brand">
             <div class="brand-main">Local Treasure Terengganu</div>
             <div class="brand-sub">DISCOVER THE HIDDEN GEMS</div>
         </a>
 
-        <!-- Right menu -->
         <div class="navbar-right">
-
-            <!-- 🔔 Notifications -->
             <a href="notifications.jsp?type=ALL" class="nav-noti" title="Notifications">
                 <i class="fas fa-bell"></i>
                 <% if (notiTotal > 0) { %>
@@ -169,7 +154,6 @@
         </button>
     </div>
 
-    <!-- Mobile menu -->
     <div class="navbar-mobile-menu" id="navbarMobileMenu">
         <a href="index.jsp" class="nav-link">Explore</a>
         <a href="bookmark.jsp" class="nav-link active">Bookmark</a>
@@ -189,7 +173,6 @@
     </div>
 </nav>
 
-<!-- ===== HEADER ===== -->
 <header class="header">
     <div class="container header-content">
         <h1>Local Treasure Terengganu</h1>
@@ -197,14 +180,12 @@
     </div>
 </header>
 
-<!-- ===== CONTENT ===== -->
 <div class="container" style="padding:30px 20px;">
     <h2 class="section-title">My Bookmarked Locations</h2>
 
     <div class="treasures-grid">
         <%
-            try (Connection conn = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/ltwbs", "root", "")) {
+            try (Connection conn = util.DBConnection.getConnection()) {
 
                 String sql =
                     "SELECT l.location_id, l.name, l.description, l.image " +
@@ -235,10 +216,8 @@
                                     <h3 class="card-title"><%= rs.getString("name") %></h3>
                                     <p class="card-description"><%= rs.getString("description") %></p>
 
-                                    <!-- ❤️ Remove bookmark using love icon -->
                                     <form action="ToggleBookmarkServlet" method="post" style="display:inline;">
                                         <input type="hidden" name="locationId" value="<%= locId %>">
-                                        <!-- ✅ stay at same card after remove -->
                                         <input type="hidden" name="redirect" value="bookmark.jsp#loc-<%= locId %>">
 
                                         <button class="love-btn" type="submit" title="Remove Bookmark">
@@ -267,7 +246,6 @@
 </div>
 
 <script>
-    // navbar mobile toggle
     document.addEventListener('DOMContentLoaded', function() {
         const navbarToggle = document.getElementById('navbarToggle');
         const navbarMobileMenu = document.getElementById('navbarMobileMenu');
