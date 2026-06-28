@@ -745,3 +745,66 @@ header {
     filter:none;
     transform: scale(1.15);
 }
+/* ===== MOBILE PHONE (max 480px) ===== */
+@media screen and (max-width: 480px) {
+
+    /* Navbar */
+    .brand-main { font-size: 16px; }
+    .brand-sub { font-size: 9px; }
+
+    /* Header */
+    .header { padding: 50px 0; }
+    .header h1 { font-size: 20px; }
+    .header p { font-size: 14px; }
+
+    /* CTA Card */
+    .cta-wrap { margin: -20px auto 20px; padding: 0 10px; }
+    .cta-card { padding: 16px 12px; }
+    .cta-card h3 { font-size: 16px; }
+    .cta-card p { font-size: 13px; }
+    .cta-btn { padding: 10px 14px; font-size: 13px; }
+
+    /* Search */
+    .search-section { padding: 20px 0; border-radius: 12px; }
+    .search-container { gap: 10px; padding: 0 12px; }
+    .filter-dropdown select { width: 100%; font-size: 14px; }
+    .search-input { font-size: 14px; padding: 10px 16px; }
+    .search-btn { width: 100%; font-size: 14px; padding: 10px; }
+
+    /* Categories */
+    .categories-section { padding: 30px 0 15px; }
+    .categories-section h2 { font-size: 22px; }
+    .category-btn { padding: 8px 14px; font-size: 13px; }
+
+    /* Grid — 1 column on phone */
+    .treasures-grid { 
+        grid-template-columns: 1fr; 
+        gap: 16px; 
+        margin-top: 20px; 
+    }
+
+    /* Cards */
+    .card-image { height: 160px; }
+    .card-content { padding: 16px; }
+    .card-title { font-size: 17px; }
+    .card-description { font-size: 14px; }
+    .card-btn { padding: 10px 18px; font-size: 14px; width: 100%; text-align: center; }
+
+    /* Section title */
+    .section-title { font-size: 22px; margin-bottom: 30px; }
+
+    /* Footer */
+    .footer { padding: 40px 0 20px; }
+    .footer-logo h1 { font-size: 18px; }
+    .footer-links a { font-size: 14px; }
+
+    /* Chatbox */
+    #chatbox-container { 
+        left: 8px; 
+        width: 200px; 
+        top: auto; 
+        bottom: 20px; 
+        transform: none; 
+    }
+    #chatbox-container.minimized { width: 130px; }
+}
