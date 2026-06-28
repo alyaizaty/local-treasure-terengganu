@@ -1,13 +1,11 @@
 package util;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.servlet.http.Part;
 
 public class ProfileUploadUtil {
-
-    private static final Path UPLOAD_DIR = Paths.get("C:/uploads/profile");
+    private static final Path UPLOAD_DIR = Paths.get(System.getProperty("java.io.tmpdir"), "uploads", "profile");
 
     public static void ensureUploadDirectoryExists() throws Exception {
         Files.createDirectories(UPLOAD_DIR);
@@ -16,16 +14,12 @@ public class ProfileUploadUtil {
     public static String saveProfileImage(Part filePart, int userId) throws Exception {
         String submitted = getSubmittedFileName(filePart);
         String ext = getExt(submitted).toLowerCase();
-
         if (!(ext.equals(".png") || ext.equals(".jpg") || ext.equals(".jpeg") || ext.equals(".webp"))) {
             return null;
         }
-
         String savedFileName = "u" + userId + "_" + System.currentTimeMillis() + ext;
         Path target = UPLOAD_DIR.resolve(savedFileName);
-
         filePart.write(target.toString());
-
         return savedFileName;
     }
 
@@ -47,7 +41,6 @@ public class ProfileUploadUtil {
     public static String getSubmittedFileName(Part part) {
         String cd = part.getHeader("content-disposition");
         if (cd == null) return "upload";
-
         for (String token : cd.split(";")) {
             token = token.trim();
             if (token.startsWith("filename=")) {
