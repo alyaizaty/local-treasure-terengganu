@@ -149,6 +149,25 @@
                     <a href="sign_up.jsp?from=home" class="nav-link">Sign Up</a>
                     <% } %>
                 </div>
+                    <div class="navbar-mobile-menu" id="navbarMobileMenu">
+                <a href="index.jsp" class="nav-link active">Explore</a>
+                <a href="bookmark.jsp" class="nav-link">Bookmark</a>
+                <a href="treasures.jsp" class="nav-link">Treasures</a>
+                <% if (loggedIn) { %>
+                <a href="notifications.jsp?type=ALL" class="nav-link">Notifications <% if (notiTotal > 0) { %>(<%= notiTotal %>)<% } %></a>
+                <a href="user_profile.jsp" class="nav-profile">
+                    <img src="<%= profileImgUrl %>" class="nav-profile-img">
+                    <span><%= username %></span>
+                </a>
+                <% if ("Local Business".equalsIgnoreCase(role)) { %>
+                <a href="business_dashboard.jsp" class="nav-link">Dashboard</a>
+                <% } %>
+                <a href="<%= request.getContextPath() %>/LogoutServlet" class="nav-link">Logout</a>
+                <% } else { %>
+                <a href="login.jsp" class="nav-link">Login</a>
+                <a href="sign_up.jsp?from=home" class="nav-link">Sign Up</a>
+                <% } %>
+            </div>
                 <button class="navbar-toggle" id="navbarToggle" type="button"><i class="fas fa-bars"></i></button>
             </div>
         </nav>
@@ -468,16 +487,14 @@
                     <div class="footer-links">
                         <a href="index.jsp">Home</a>
                         <a href="treasures.jsp">Treasures</a>
-                        <a href="about.jsp">About Us</a>
-                        <a href="plan-visit.jsp">Plan Your Visit</a>
                         <a href="bookmark.jsp">Bookmarks</a>
-                        <a href="contact.jsp">Contact Us</a>
+         
                     </div>
                     <div class="footer-contact">
                         <strong>Contact Information</strong>
                         <address>Kompleks Yayasan Islam Terengganu, 20200 Kuala Terengganu, Terengganu, Malaysia</address>
                         <p><i class="fas fa-phone"></i> +60 9-622 1433</p>
-                        <p><i class="fas fa-envelope"></i> info@terengganu-treasure.my</p>
+                        <p><i class="fas fa-envelope"></i> localtreasureterengganu@gmail.com</p>
                     </div>
                 </div>
                 <div class="footer-bottom">
@@ -580,5 +597,22 @@
                 });
             }
         </script>
+        <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarMobileMenu = document.getElementById('navbarMobileMenu');
+        if (navbarToggle && navbarMobileMenu) {
+            navbarToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                navbarMobileMenu.classList.toggle('active');
+            });
+        }
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.navbar-container') && !event.target.closest('.navbar-mobile-menu')) {
+                navbarMobileMenu.classList.remove('active');
+            }
+        });
+    });
+</script>
     </body>
 </html>

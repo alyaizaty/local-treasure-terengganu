@@ -807,4 +807,15 @@ header {
         transform: none; 
     }
     #chatbox-container.minimized { width: 130px; }
+}@media screen and (max-width: 480px) {
+    .footer { padding: 30px 0 15px; margin-top: 30px; }
+    .footer-inner { grid-template-columns: 1fr; gap: 20px; text-align: center; }
+    .footer-logo h1 { font-size: 16px; }
+    .footer-logo p { font-size: 12px; }
+    .footer-links { align-items: center; gap: 8px; }
+    .footer-links a { font-size: 13px; }
+    .footer-contact strong { font-size: 14px; }
+    .footer-contact address { font-size: 12px; }
+    .footer-contact p { font-size: 12px; }
+    .footer-bottom { font-size: 11px; padding-top: 15px; }
 }
