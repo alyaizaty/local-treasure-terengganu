@@ -40,71 +40,44 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/home.css">
-    <style>
-        .nav-guest{ display:inline-flex; align-items:center; gap:8px; color:#fff; font-weight:700; }
-        .guest-badge{ width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,0.18); border:2px solid #f8c471; font-weight:800; }
-        .guest-text{ opacity:.9; }
-        .nav-noti{ position:relative; display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border:2px solid #111; border-radius:999px; background:#fff; color:#111; text-decoration:none; box-shadow:0 6px 0 #111; }
-        .nav-noti:hover{ background:#111; color:#fff; }
-        .nav-noti .noti-badge{ position:absolute; top:-8px; right:-8px; min-width:22px; height:22px; padding:0 6px; border-radius:999px; border:2px solid #111; background:#ff4757; color:#fff; font-weight:1000; font-size:12px; display:inline-flex; align-items:center; justify-content:center; }
-        .love-btn{ width:44px; height:44px; border-radius:999px; border:2px solid #111; background:#fff; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 6px 0 #111; transition:0.2s; text-decoration:none; color:#111; padding:0; }
-        .love-btn i{ font-size:18px; }
-        .love-btn:hover{ transform:translateY(-2px); box-shadow:0 10px 0 #111; }
-        .love-btn.active{ background:#ff4757; color:#fff; border-color:#111; }
-        .page-head{ max-width:1100px; margin:26px auto 8px; padding:0 20px; }
-        .page-head h1{ margin:0 0 6px 0; color:#111; }
-        .page-head p{ margin:0; color:#555; }
+  <style>
+    .nav-guest{ display:inline-flex; align-items:center; gap:8px; color:#fff; font-weight:700; }
+    .guest-badge{ width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,0.18); border:2px solid #f8c471; font-weight:800; }
+    .guest-text{ opacity:.9; }
+    .nav-noti{ position:relative; display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border:2px solid #111; border-radius:999px; background:#fff; color:#111; text-decoration:none; box-shadow:0 6px 0 #111; }
+    .nav-noti:hover{ background:#111; color:#fff; }
+    .nav-noti .noti-badge{ position:absolute; top:-8px; right:-8px; min-width:22px; height:22px; padding:0 6px; border-radius:999px; border:2px solid #111; background:#ff4757; color:#fff; font-weight:1000; font-size:12px; display:inline-flex; align-items:center; justify-content:center; }
+    .love-btn{ width:44px; height:44px; border-radius:999px; border:2px solid #111; background:#fff; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 6px 0 #111; transition:0.2s; text-decoration:none; color:#111; padding:0; }
+    .love-btn i{ font-size:18px; }
+    .love-btn:hover{ transform:translateY(-2px); box-shadow:0 10px 0 #111; }
+    .love-btn.active{ background:#ff4757; color:#fff; border-color:#111; }
+    .page-head{ max-width:1100px; margin:26px auto 8px; padding:0 20px; }
+    .page-head h1{ margin:0 0 6px 0; color:#111; }
+    .page-head p{ margin:0; color:#555; }
 
-        @media screen and (max-width: 480px) {
-            @media screen and (max-width: 480px) {
-    .treasures-grid { 
-        grid-template-columns: 1fr; 
-        gap: 16px; 
-        margin-top: 16px;
-        padding: 0 16px;  /* TAMBAH NI */
+    @media screen and (max-width: 768px) {
+        .treasures-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px; padding: 0 12px; }
+        .card-image { height: 140px; }
+        .card-content { padding: 12px; }
+        .card-title { font-size: 14px; }
+        .card-description { font-size: 12px; }
+        .card-btn { padding: 8px; font-size: 12px; width: 100%; text-align: center; display: block; }
+        .love-btn { width: 36px; height: 36px; }
+        .love-btn i { font-size: 14px; }
+        .page-head h1 { font-size: 22px; color: #111; }
+        .section-title { font-size: 22px; }
+        .footer-inner { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; text-align: left !important; }
+        .footer { padding: 20px 12px 15px; }
+        .footer-logo h1 { font-size: 12px; }
+        .footer-logo p { font-size: 10px; line-height: 1.4; }
+        .footer-links { align-items: flex-start; }
+        .footer-links a { font-size: 11px; }
+        .footer-contact strong { font-size: 11px; }
+        .footer-contact address { font-size: 10px; }
+        .footer-contact p { font-size: 10px; }
+        .footer-bottom { font-size: 10px; padding-top: 10px; }
     }
-    .treasure-card { 
-        width: 100%; 
-        margin: 0 auto;  /* TAMBAH NI */
-    }
-    .treasures-section {
-        padding: 20px 0;  /* TAMBAH NI */
-    }
-}@media screen and (max-width: 480px) {
-    .footer { padding: 30px 16px 15px; margin-top: 30px; }
-    .footer-inner { 
-        grid-template-columns: 1fr; 
-        gap: 20px; 
-        text-align: center; 
-    }
-    .footer-logo h1 { font-size: 16px; }
-    .footer-logo p { font-size: 12px; }
-    .footer-links { align-items: center; gap: 8px; }
-    .footer-links a { font-size: 13px; }
-    .footer-contact strong { font-size: 14px; }
-    .footer-contact address { font-size: 12px; }
-    .footer-contact p { font-size: 12px; }
-    .footer-bottom { font-size: 11px; padding-top: 15px; }
-}
-            .treasures-grid { grid-template-columns: 1fr; gap: 16px; margin-top: 16px; }
-            .treasure-card { width: 100%; }
-            .card-image { height: 160px; width: 100%; object-fit: cover; }
-            .card-content { padding: 14px; }
-            .card-title { font-size: 16px; }
-            .card-description { font-size: 13px; }
-            .card-btn { width: 100%; text-align: center; display: block; padding: 10px; }
-            .page-head { margin: 16px auto 8px; padding: 0 14px; }
-            .page-head h1 { font-size: 22px; }
-            .section-title { font-size: 20px; }
-        }
-        @media screen and (max-width: 480px) {
-    .cta-wrap { margin: -10px auto 16px; padding: 0 12px; }
-    .cta-card { padding: 14px 12px; }
-    .cta-card h3 { font-size: 16px; }
-    .cta-card p { font-size: 13px; margin-bottom: 12px; }
-    .cta-btn { padding: 10px 14px; font-size: 13px; width: 100%; justify-content: center; }
-}
-    </style>
+</style>
 </head>
 <body>
 <nav class="navbar">

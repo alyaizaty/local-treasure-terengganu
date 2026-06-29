@@ -141,14 +141,28 @@
         }
 
         /* ===== OPTIONS GRID ===== */
-        .grid{
-            display:grid;
-            grid-template-columns: repeat(2, minmax(0,1fr));
-            gap:16px;
-        }
-        @media(max-width:860px){
-            .grid{ grid-template-columns:1fr; }
-        }
+    @media(max-width:860px){
+    .grid{ grid-template-columns: 1fr; }
+}
+
+@media(max-width:480px){
+    .grid{ grid-template-columns: 1fr; gap: 12px; }
+    .wrap{ padding: 0 20px; margin: -30px auto 20px; }
+    .roleBox{ padding: 14px; gap: 8px; }
+    .roleName{ font-size: 16px; }
+    .roleTag{ font-size: 11px; padding: 4px 8px; }
+    .roleDesc{ font-size: 13px; }
+    .roleList{ font-size: 12px; padding-left: 16px; }
+    .roleList li{ margin: 4px 0; }
+    .btnSignup{ padding: 10px 14px; font-size: 13px; }
+    .roleIcon{ width: 38px; height: 38px; font-size: 16px; }
+    .hero{ padding: 30px 20px 50px; }
+    .hero h1{ font-size: 22px; }
+    .hero p{ font-size: 13px; }
+    .cardHead{ padding: 14px; }
+    .cardBody{ padding: 14px; }
+}y{ padding: 12px; }
+
 
         .roleBox{
             background:#fff;
@@ -256,24 +270,7 @@
             font-weight:1000;
         }
 
-        /* ===== FOOTER ===== */
-        .footer{
-            margin-top:34px;
-            padding:26px 18px;
-            background:#111;
-            color:#fff;
-        }
-        .footerInner{
-            max-width:1100px;
-            margin:0 auto;
-            display:flex;
-            justify-content:space-between;
-            gap:18px;
-            flex-wrap:wrap;
-        }
-        .footer a{ color:#fff; opacity:.9; text-decoration:none; font-weight:800; }
-        .footer a:hover{ text-decoration:underline; }
-        .footer small{ opacity:.75; font-weight:700; }
+       
     </style>
 </head>
 
@@ -388,22 +385,7 @@
     </div>
 </div>
 
-<!-- ===== FOOTER ===== -->
-<footer class="footer">
-    <div class="footerInner">
-        <div>
-            <h3 style="margin:0 0 6px; font-weight:1000;">Local Treasure Terengganu</h3>
-            <small>Your guide to discovering the best local treasures in Terengganu.</small>
-        </div>
 
-        <div style="display:flex; gap:14px; flex-wrap:wrap;">
-            <a href="index.jsp">Home</a>
-            <a href="treasures.jsp">Treasures</a>
-            <a href="about.jsp">About Us</a>
-            <a href="plan-visit.jsp">Plan Your Visit</a>
-        </div>
-    </div>
-</footer>
 
 </body>
 </html>

@@ -212,6 +212,24 @@
       font-weight:800;
       margin-top:6px;
     }
+    @media screen and (max-width: 480px) {
+    .hero { padding: 30px 14px 50px; }
+    .hero h1 { font-size: 22px; }
+    .hero p { font-size: 13px; }
+    .hero .actions { gap: 8px; }
+    .btnTop { padding: 8px 12px; font-size: 13px; }
+    
+    .wrap { padding: 0 16px; margin: -30px auto 20px; }
+    .card { border-radius: 14px; }
+    .cardHead { padding: 14px; }
+    .cardBody { padding: 14px; }
+    
+    .input { padding: 10px 12px; font-size: 14px; }
+    .btn { padding: 10px 14px; font-size: 14px; }
+    .label { font-size: 14px; }
+    .hint { font-size: 12px; }
+    .foot { font-size: 13px; }
+}
   </style>
 </head>
 

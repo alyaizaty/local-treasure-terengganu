@@ -1,26 +1,33 @@
 package util;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import javax.servlet.http.Part;
 
 public class FileUploadUtil {
 
-    private static final Path UPLOAD_DIR = Paths.get("C:/uploads/profile");
+    private static final Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
+        "cloud_name", "doo3ui8xn",
+        "api_key", "458121741898811",
+        "api_secret", "r5GecXAEy3gS0PetUO9Rn0PblUA"
+    ));
 
-    public static Path getUploadDir() {
-        return UPLOAD_DIR;
-    }
+    private static final Path TEMP_DIR = Paths.get(System.getProperty("java.io.tmpdir"), "uploads", "profile");
+
+    public static Path getUploadDir() { return TEMP_DIR; }
 
     public static void createUploadDirectory() throws Exception {
-        Files.createDirectories(UPLOAD_DIR);
+        Files.createDirectories(TEMP_DIR);
     }
 
     public static String getSubmittedFileName(Part part) {
         String cd = part.getHeader("content-disposition");
         if (cd == null) return "upload";
-
         for (String token : cd.split(";")) {
             token = token.trim();
             if (token.startsWith("filename=")) {
@@ -53,18 +60,23 @@ public class FileUploadUtil {
         String submitted = getSubmittedFileName(filePart);
         String ext = getExtension(submitted).toLowerCase();
 
-        String savedFileName = "u_signup_" + System.currentTimeMillis() + ext;
-        Path target = UPLOAD_DIR.resolve(savedFileName);
+        Files.createDirectories(TEMP_DIR);
+        String tempName = "signup_" + System.currentTimeMillis() + ext;
+        Path tempPath = TEMP_DIR.resolve(tempName);
+        filePart.write(tempPath.toString());
 
-        filePart.write(target.toString());
-        return savedFileName;
+        File tempFile = tempPath.toFile();
+        Map result = cloudinary.uploader().upload(tempFile, ObjectUtils.asMap(
+            "folder", "profile",
+            "public_id", "signup_" + System.currentTimeMillis(),
+            "overwrite", false
+        ));
+        tempFile.delete();
+
+        return (String) result.get("secure_url");
     }
 
-    public static void deleteProfileImage(String fileName) {
-        try {
-            Files.deleteIfExists(UPLOAD_DIR.resolve(fileName));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void deleteProfileImage(String url) {
+        // Cloudinary manages deletion
     }
 }

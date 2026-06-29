@@ -179,25 +179,10 @@
 <body style="background-color: #f4f7f6; margin: 0; font-family: Arial, sans-serif;">
 
 <!-- Simple Header to match design -->
-<div style="background:#000; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; color:#fff;">
-    <div style="display:flex; gap:20px;">
-        <a href="index.jsp" style="color:#fff; text-decoration:none; font-weight:bold;">Explore</a>
-        <a href="bookmark.jsp" style="color:#fff; text-decoration:none; font-weight:bold;">Bookmark</a>
-        <a href="treasures.jsp" style="color:#fff; text-decoration:none; font-weight:bold;">Treasures</a>
-    </div>
-    <div style="text-align:center;">
-        <div style="font-size:20px; font-weight:900;">Local Treasure Terengganu</div>
-        <div style="font-size:10px; color:#f59e0b; letter-spacing:1px;">DISCOVER THE HIDDEN GEMS</div>
-    </div>
-    <div style="display:flex; gap:20px; align-items:center;">
-        <% if(loggedIn) { %>
-            <span><img src="<%= profileImgUrl %>" style="width:30px; height:30px; border-radius:50%; vertical-align:middle; margin-right:8px;"> <%= username %></span>
-            <a href="<%= request.getContextPath()%>/LogoutServlet" style="color:#fff; text-decoration:none; font-weight:bold;">Logout</a>
-        <% } else { %>
-            <a href="login.jsp" style="color:#fff; text-decoration:none; font-weight:bold;">Login</a>
-        <% } %>
-    </div>
-</div>
+
+   
+    
+
 
 <div class="wrap">
     <a class="back" href="index.jsp">
@@ -459,6 +444,6 @@
         %>
     </div>
 </div>
-<%@ include file="footer.jsp" %>
+
 </body>
 </html>
