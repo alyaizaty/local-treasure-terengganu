@@ -199,39 +199,37 @@
 
                     try (ResultSet rs = ps.executeQuery()) {
                         boolean any = false;
-
-                        while (rs.next()) {
+while (rs.next()) {
                             any = true;
 
                             int locId = rs.getInt("location_id");
                             String img = rs.getString("image");
-                         String imgUrl = request.getContextPath() + "/image/background.jpg";
-if (img != null && !img.trim().isEmpty()) {
-    if (img.startsWith("http://") || img.startsWith("https://")) {
-        imgUrl = img; // Cloudinary URL terus
-    } else if (img.startsWith("sub_")) {
-        imgUrl = request.getContextPath() + "/LocationImageServlet?file=" + img;
-    } else {
-        imgUrl = request.getContextPath() + "/image/" + img;
-    }
-}
+                            String imgUrl = request.getContextPath() + "/image/background.jpg";
+                            if (img != null && !img.trim().isEmpty()) {
+                                if (img.startsWith("http://") || img.startsWith("https://")) {
+                                    imgUrl = img;
+                                } else if (img.startsWith("sub_")) {
+                                    imgUrl = request.getContextPath() + "/LocationImageServlet?file=" + img;
+                                } else {
+                                    imgUrl = request.getContextPath() + "/image/" + img;
+                                }
+                            }
+                        %>
                             <div class="treasure-card" id="loc-<%= locId %>">
                                 <img src="<%= imgUrl %>" class="card-image">
-
                                 <div class="card-content">
                                     <h3 class="card-title"><%= rs.getString("name") %></h3>
                                     <p class="card-description"><%= rs.getString("description") %></p>
-
                                     <form action="ToggleBookmarkServlet" method="post" style="display:inline;">
                                         <input type="hidden" name="locationId" value="<%= locId %>">
                                         <input type="hidden" name="redirect" value="bookmark.jsp#loc-<%= locId %>">
-
                                         <button class="love-btn" type="submit" title="Remove Bookmark">
                                             <i class="fas fa-heart-broken"></i>
                                         </button>
                                     </form>
                                 </div>
                             </div>
+                        <
         <%
                         }
 

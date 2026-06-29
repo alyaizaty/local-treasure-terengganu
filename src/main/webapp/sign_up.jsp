@@ -9,269 +9,67 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <style>
-        :root{
-            --black:#111;
-            --white:#fff;
-            --bg:#f3f4f6;
-            --muted:#6b7280;
-            --shadow:0 12px 28px rgba(0,0,0,.14);
-            --shadow2:0 6px 0 #111;
-            --accent:#0f2a45;
-            --accent2:#ff4757;
-        }
+  <style>
+    :root{
+        --black:#111;
+        --white:#fff;
+        --bg:#f3f4f6;
+        --muted:#6b7280;
+        --shadow:0 12px 28px rgba(0,0,0,.14);
+        --shadow2:0 6px 0 #111;
+        --accent:#0f2a45;
+        --accent2:#ff4757;
+    }
+    body{ margin:0; font-family:Arial,sans-serif; background:linear-gradient(135deg,#f3f4f6 0%,#e9eef5 100%); min-height:100vh; }
+    .hero{ background:linear-gradient(120deg,var(--accent) 0%,#111 100%); color:#fff; padding:48px 18px 70px; position:relative; overflow:hidden; }
+    .hero::after{ content:""; position:absolute; inset:-80px -80px auto auto; width:220px; height:220px; background:rgba(255,255,255,.10); border-radius:999px; }
+    .hero .inner{ max-width:1100px; margin:0 auto; display:flex; justify-content:space-between; align-items:flex-start; gap:18px; flex-wrap:wrap; }
+    .hero h1{ margin:0; font-size:32px; font-weight:1000; letter-spacing:0.5px; }
+    .hero p{ margin:10px 0 0; max-width:650px; opacity:.92; font-weight:700; line-height:1.6; }
+    .hero .mini-actions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .btnTop{ display:inline-flex; align-items:center; gap:10px; padding:10px 14px; border-radius:14px; border:2px solid rgba(255,255,255,.35); color:#fff; text-decoration:none; font-weight:900; background:rgba(255,255,255,.08); backdrop-filter:blur(10px); }
+    .btnTop:hover{ background:rgba(255,255,255,.16); }
+    .wrap{ max-width:1100px; margin:-44px auto 30px; padding:0 16px; position:relative; z-index:10; }
+    .card{ background:#fff; border:2px solid var(--black); border-radius:18px; box-shadow:var(--shadow); overflow:hidden; }
+    .cardHead{ padding:18px; border-bottom:2px solid var(--black); display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+    .cardHead .title{ display:flex; align-items:center; gap:10px; font-weight:1000; font-size:18px; }
+    .badge{ display:inline-flex; align-items:center; gap:8px; padding:7px 12px; border-radius:999px; border:2px solid var(--black); background:#fff; font-weight:1000; font-size:12px; }
+    .cardBody{ padding:18px; background:#f7f7f7; }
+    .grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .roleBox{ background:#fff; border:2px solid var(--black); border-radius:16px; padding:18px; box-shadow:var(--shadow2); transition:0.2s; display:flex; flex-direction:column; gap:10px; }
+    .roleBox:hover{ transform:translateY(-2px); box-shadow:0 10px 0 #111; }
+    .roleTop{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+    .roleIcon{ width:44px; height:44px; border-radius:14px; border:2px solid var(--black); display:grid; place-items:center; font-size:18px; background:#fff; }
+    .roleName{ margin:0; font-size:18px; font-weight:1000; }
+    .roleTag{ display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; border:2px solid var(--black); font-weight:1000; font-size:12px; background:#f3f4f6; }
+    .roleDesc{ margin:0; color:var(--muted); font-weight:800; line-height:1.6; }
+    .roleList{ margin:0; padding-left:18px; color:#111; font-weight:800; }
+    .roleList li{ margin:7px 0; }
+    .btnSignup{ margin-top:6px; display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:12px 16px; border-radius:14px; border:2px solid var(--black); background:#fff; color:#111; font-weight:1000; text-decoration:none; box-shadow:0 6px 0 #111; transition:0.2s; }
+    .btnSignup:hover{ transform:translateY(-2px); box-shadow:0 10px 0 #111; }
+    .btnPrimary{ background:var(--accent); color:#fff; }
+    .btnDanger{ background:var(--accent2); color:#fff; }
+    .bottomLink{ margin-top:18px; text-align:center; font-weight:900; color:var(--muted); }
+    .bottomLink a{ color:#111; text-decoration:underline; font-weight:1000; }
 
-        body{
-            margin:0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #f3f4f6 0%, #e9eef5 100%);
-            min-height:100vh;
-        }
-
-        /* ===== HERO HEADER ===== */
-        .hero{
-            background: linear-gradient(120deg, var(--accent) 0%, #111 100%);
-            color:#fff;
-            padding:48px 18px 70px;
-            position:relative;
-            overflow:hidden;
-        }
-        .hero::after{
-            content:"";
-            position:absolute;
-            inset:-80px -80px auto auto;
-            width:220px; height:220px;
-            background: rgba(255,255,255,.10);
-            border-radius:999px;
-            filter: blur(0px);
-        }
-        .hero .inner{
-            max-width:1100px;
-            margin:0 auto;
-            display:flex;
-            justify-content:space-between;
-            align-items:flex-start;
-            gap:18px;
-            flex-wrap:wrap;
-        }
-        .hero h1{
-            margin:0;
-            font-size:32px;
-            font-weight:1000;
-            letter-spacing:0.5px;
-        }
-        .hero p{
-            margin:10px 0 0;
-            max-width:650px;
-            opacity:.92;
-            font-weight:700;
-            line-height:1.6;
-        }
-        .hero .mini-actions{
-            display:flex;
-            gap:10px;
-            align-items:center;
-            flex-wrap:wrap;
-        }
-        .btnTop{
-            display:inline-flex;
-            align-items:center;
-            gap:10px;
-            padding:10px 14px;
-            border-radius:14px;
-            border:2px solid rgba(255,255,255,.35);
-            color:#fff;
-            text-decoration:none;
-            font-weight:900;
-            background: rgba(255,255,255,.08);
-            backdrop-filter: blur(10px);
-        }
-        .btnTop:hover{
-            background: rgba(255,255,255,.16);
-        }
-
-        /* ===== MAIN WRAP ===== */
-        .wrap{
-            max-width:1100px;
-            margin:-44px auto 30px;
-            padding:0 16px;
-            position:relative;
-            z-index:10;
-        }
-
-        .card{
-            background:#fff;
-            border:2px solid var(--black);
-            border-radius:18px;
-            box-shadow: var(--shadow);
-            overflow:hidden;
-        }
-
-        .cardHead{
-            padding:18px 18px;
-            border-bottom:2px solid var(--black);
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            gap:10px;
-            flex-wrap:wrap;
-        }
-        .cardHead .title{
-            display:flex;
-            align-items:center;
-            gap:10px;
-            font-weight:1000;
-            font-size:18px;
-        }
-        .badge{
-            display:inline-flex;
-            align-items:center;
-            gap:8px;
-            padding:7px 12px;
-            border-radius:999px;
-            border:2px solid var(--black);
-            background:#fff;
-            font-weight:1000;
-            font-size:12px;
-        }
-
-        .cardBody{
-            padding:18px;
-            background:#f7f7f7;
-        }
-
-        /* ===== OPTIONS GRID ===== */
-    @media(max-width:860px){
-    .grid{ grid-template-columns: 1fr; }
-}
-
-@media(max-width:480px){
-    .grid{ grid-template-columns: 1fr; gap: 12px; }
-    .wrap{ padding: 0 20px; margin: -30px auto 20px; }
-    .roleBox{ padding: 14px; gap: 8px; }
-    .roleName{ font-size: 16px; }
-    .roleTag{ font-size: 11px; padding: 4px 8px; }
-    .roleDesc{ font-size: 13px; }
-    .roleList{ font-size: 12px; padding-left: 16px; }
-    .roleList li{ margin: 4px 0; }
-    .btnSignup{ padding: 10px 14px; font-size: 13px; }
-    .roleIcon{ width: 38px; height: 38px; font-size: 16px; }
-    .hero{ padding: 30px 20px 50px; }
-    .hero h1{ font-size: 22px; }
-    .hero p{ font-size: 13px; }
-    .cardHead{ padding: 14px; }
-    .cardBody{ padding: 14px; }
-}y{ padding: 12px; }
-
-
-        .roleBox{
-            background:#fff;
-            border:2px solid var(--black);
-            border-radius:16px;
-            padding:18px;
-            box-shadow: var(--shadow2);
-            transition: 0.2s;
-            display:flex;
-            flex-direction:column;
-            gap:10px;
-        }
-        .roleBox:hover{
-            transform: translateY(-2px);
-            box-shadow: 0 10px 0 #111;
-        }
-
-        .roleTop{
-            display:flex;
-            align-items:flex-start;
-            justify-content:space-between;
-            gap:10px;
-        }
-        .roleIcon{
-            width:44px; height:44px;
-            border-radius:14px;
-            border:2px solid var(--black);
-            display:grid;
-            place-items:center;
-            font-size:18px;
-            background:#fff;
-        }
-        .roleName{
-            margin:0;
-            font-size:18px;
-            font-weight:1000;
-        }
-        .roleTag{
-            display:inline-flex;
-            align-items:center;
-            gap:8px;
-            padding:6px 10px;
-            border-radius:999px;
-            border:2px solid var(--black);
-            font-weight:1000;
-            font-size:12px;
-            background:#f3f4f6;
-        }
-
-        .roleDesc{
-            margin:0;
-            color:var(--muted);
-            font-weight:800;
-            line-height:1.6;
-        }
-
-        .roleList{
-            margin:0;
-            padding-left:18px;
-            color:#111;
-            font-weight:800;
-        }
-        .roleList li{
-            margin:7px 0;
-        }
-
-        .btnSignup{
-            margin-top:6px;
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            gap:10px;
-            padding:12px 16px;
-            border-radius:14px;
-            border:2px solid var(--black);
-            background:#fff;
-            color:#111;
-            font-weight:1000;
-            text-decoration:none;
-            box-shadow: 0 6px 0 #111;
-            transition: 0.2s;
-        }
-        .btnSignup:hover{
-            transform: translateY(-2px);
-            box-shadow: 0 10px 0 #111;
-        }
-        .btnPrimary{
-            background: var(--accent);
-            color:#fff;
-        }
-        .btnDanger{
-            background: var(--accent2);
-            color:#fff;
-        }
-
-        .bottomLink{
-            margin-top:18px;
-            text-align:center;
-            font-weight:900;
-            color:var(--muted);
-        }
-        .bottomLink a{
-            color:#111;
-            text-decoration:underline;
-            font-weight:1000;
-        }
-
-       
-    </style>
+    @media(max-width:480px){
+        .grid{ grid-template-columns:1fr; gap:12px; }
+        .wrap{ padding:0 20px; margin:-30px auto 20px; }
+        .roleBox{ padding:14px; gap:8px; }
+        .roleName{ font-size:16px; }
+        .roleTag{ font-size:11px; padding:4px 8px; }
+        .roleDesc{ font-size:13px; }
+        .roleList{ font-size:12px; padding-left:16px; }
+        .roleList li{ margin:4px 0; }
+        .btnSignup{ padding:10px 14px; font-size:13px; }
+        .roleIcon{ width:38px; height:38px; font-size:16px; }
+        .hero{ padding:30px 20px 50px; }
+        .hero h1{ font-size:22px; }
+        .hero p{ font-size:13px; }
+        .cardHead{ padding:14px; }
+        .cardBody{ padding:14px; }
+    }
+</style>
 </head>
 
 <body>

@@ -22,8 +22,7 @@ public class DeleteAccountServlet extends HttpServlet {
 
         int userId = (Integer) session.getAttribute("userId");
 
-        try (Connection conn = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/ltwbs", "root", "")) {
+      try (Connection conn = util.DBConnection.getConnection()) {
 
             conn.setAutoCommit(false);
 
