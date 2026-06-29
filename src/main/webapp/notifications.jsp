@@ -26,8 +26,7 @@
 
     String notiHtml = "";
 
-    try (Connection conn = DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/ltwbs", "root", "")) {
+try (Connection conn = util.DBConnection.getConnection()) {
 
         // Count likes on your reviews (exclude your own likes)
         try (PreparedStatement ps = conn.prepareStatement(

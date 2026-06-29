@@ -404,20 +404,22 @@ public class ContentDashboardServlet extends HttpServlet {
     }
 
     // HELPER METHOD: Standardized Image Routing
-    private String resolveImageUrl(String img, String contextPath) throws Exception {
-        String imgUrl = contextPath + "/image/background.jpg"; // Default
-        if (img != null && !img.trim().isEmpty()) {
-            String clean = img.trim();
-            if (clean.startsWith("sub_")) {
-                imgUrl = contextPath + "/LocationImageServlet?file=" + URLEncoder.encode(clean, "UTF-8");
-            } else if (clean.startsWith("business_")) {
-                imgUrl = contextPath + "/uploads/" + URLEncoder.encode(clean, "UTF-8");
-            } else {
-                imgUrl = contextPath + "/image/" + clean; // Fallback to standard images folder
-            }
+  private String resolveImageUrl(String img, String contextPath) throws Exception {
+    String imgUrl = contextPath + "/image/background.jpg";
+    if (img != null && !img.trim().isEmpty()) {
+        String clean = img.trim();
+        if (clean.startsWith("http://") || clean.startsWith("https://")) {
+            imgUrl = clean;
+        } else if (clean.startsWith("sub_")) {
+            imgUrl = contextPath + "/LocationImageServlet?file=" + URLEncoder.encode(clean, "UTF-8");
+        } else if (clean.startsWith("business_")) {
+            imgUrl = contextPath + "/uploads/" + URLEncoder.encode(clean, "UTF-8");
+        } else {
+            imgUrl = contextPath + "/image/" + clean;
         }
-        return imgUrl;
     }
+    return imgUrl;
+}
 
     private int count(Connection conn, String sql) {
         try (PreparedStatement ps = conn.prepareStatement(sql);

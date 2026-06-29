@@ -13,7 +13,7 @@
 
     String name="", category="", description="", addressLine="", city="", state="", gmapsLink="", status="";
 
-    try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/ltwbs","root","")) {
+    try (Connection conn = util.DBConnection.getConnection()) {
 
         // 1) get submission main data
         String sql = "SELECT * FROM location_submission WHERE submission_id=? AND user_id=? LIMIT 1";
