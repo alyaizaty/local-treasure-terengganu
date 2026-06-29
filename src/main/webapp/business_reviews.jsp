@@ -73,7 +73,56 @@
         .meta-metrics span.sep{ color:#d1d5db; }
         .btn{ display:inline-flex; gap:8px; align-items:center; padding:10px 14px; border-radius:12px; border:1px solid rgba(0,0,0,.12); background:#111; color:#fff; text-decoration:none; font-weight:900; }
         .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:18px; }
-        @media(max-width:900px){ .grid2{ grid-template-columns:1fr; } }
+      @media (max-width:768px){
+
+    .wrap{
+        max-width:100%;
+        padding:15px;
+    }
+
+    .hero img{
+        height:240px;
+    }
+
+    .hero-body{
+        padding:18px;
+    }
+
+    .title{
+        font-size:22px;
+    }
+
+    .row{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-end;
+        flex-wrap:wrap;
+        gap:12px;
+    }
+
+    /* KEKALKAN 2 COLUMN */
+    .grid2{
+        grid-template-columns:1fr 1fr;
+        gap:15px;
+    }
+
+    .card{
+        padding:15px;
+    }
+
+    .ratingBox{
+        gap:12px;
+    }
+
+    .big{
+        font-size:30px;
+    }
+
+    .gallery img{
+        width:120px;
+        height:90px;
+    }
+}
         .card{ background:#fff; border-radius:18px; padding:16px; box-shadow:0 10px 24px rgba(0,0,0,.08); border:1px solid #eee; }
         .card h3{ margin:0 0 10px; font-size:18px; font-weight:900; }
         .ratingBox{ display:flex; gap:16px; align-items:flex-start; }
@@ -99,31 +148,10 @@
         .gallery{ margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; }
         .gallery img{ width:160px; height:120px; object-fit:cover; border-radius:12px; border:1px solid #eee; }
         .msg{ margin:10px 0; padding:10px 12px; border-radius:12px; background:#ecfdf5; border:1px solid #10b98133; color:#065f46; font-weight:800; }
-        .navbar{ background:#000; padding:15px 0; }
+
     </style>
 </head>
 
-<body style="background-color: #f4f7f6; margin: 0; font-family: Arial, sans-serif;">
-
-<div style="background:#000; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; color:#fff;">
-    <div style="display:flex; gap:20px;">
-        <a href="index.jsp" style="color:#fff; text-decoration:none; font-weight:bold;">Explore</a>
-        <a href="bookmark.jsp" style="color:#fff; text-decoration:none; font-weight:bold;">Bookmark</a>
-        <a href="treasures.jsp" style="color:#fff; text-decoration:none; font-weight:bold;">Treasures</a>
-    </div>
-    <div style="text-align:center;">
-        <div style="font-size:20px; font-weight:900;">Local Treasure Terengganu</div>
-        <div style="font-size:10px; color:#f59e0b; letter-spacing:1px;">DISCOVER THE HIDDEN GEMS</div>
-    </div>
-    <div style="display:flex; gap:20px; align-items:center;">
-        <% if(loggedIn) { %>
-            <span><img src="<%= profileImgUrl %>" style="width:30px; height:30px; border-radius:50%; vertical-align:middle; margin-right:8px;"> <%= username %></span>
-            <a href="<%= request.getContextPath()%>/LogoutServlet" style="color:#fff; text-decoration:none; font-weight:bold;">Logout</a>
-        <% } else { %>
-            <a href="login.jsp" style="color:#fff; text-decoration:none; font-weight:bold;">Login</a>
-        <% } %>
-    </div>
-</div>
 
 <div class="wrap">
     <a class="back" href="<%= request.getContextPath() %>/businessDetails?id=<%= businessId %>">
@@ -379,6 +407,5 @@
         %>
     </div>
 </div>
-<%@ include file="footer.jsp" %>
 </body>
 </html>
