@@ -205,10 +205,16 @@
 
                             int locId = rs.getInt("location_id");
                             String img = rs.getString("image");
-                            String imgUrl = (img != null && !img.trim().isEmpty())
-                                    ? (request.getContextPath() + "/LocationImageServlet?file=" + img)
-                                    : "image/placeholder.jpg";
-        %>
+                         String imgUrl = request.getContextPath() + "/image/background.jpg";
+if (img != null && !img.trim().isEmpty()) {
+    if (img.startsWith("http://") || img.startsWith("https://")) {
+        imgUrl = img; // Cloudinary URL terus
+    } else if (img.startsWith("sub_")) {
+        imgUrl = request.getContextPath() + "/LocationImageServlet?file=" + img;
+    } else {
+        imgUrl = request.getContextPath() + "/image/" + img;
+    }
+}
                             <div class="treasure-card" id="loc-<%= locId %>">
                                 <img src="<%= imgUrl %>" class="card-image">
 

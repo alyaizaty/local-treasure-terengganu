@@ -56,6 +56,36 @@
         .page-head p{ margin:0; color:#555; }
 
         @media screen and (max-width: 480px) {
+            @media screen and (max-width: 480px) {
+    .treasures-grid { 
+        grid-template-columns: 1fr; 
+        gap: 16px; 
+        margin-top: 16px;
+        padding: 0 16px;  /* TAMBAH NI */
+    }
+    .treasure-card { 
+        width: 100%; 
+        margin: 0 auto;  /* TAMBAH NI */
+    }
+    .treasures-section {
+        padding: 20px 0;  /* TAMBAH NI */
+    }
+}@media screen and (max-width: 480px) {
+    .footer { padding: 30px 16px 15px; margin-top: 30px; }
+    .footer-inner { 
+        grid-template-columns: 1fr; 
+        gap: 20px; 
+        text-align: center; 
+    }
+    .footer-logo h1 { font-size: 16px; }
+    .footer-logo p { font-size: 12px; }
+    .footer-links { align-items: center; gap: 8px; }
+    .footer-links a { font-size: 13px; }
+    .footer-contact strong { font-size: 14px; }
+    .footer-contact address { font-size: 12px; }
+    .footer-contact p { font-size: 12px; }
+    .footer-bottom { font-size: 11px; padding-top: 15px; }
+}
             .treasures-grid { grid-template-columns: 1fr; gap: 16px; margin-top: 16px; }
             .treasure-card { width: 100%; }
             .card-image { height: 160px; width: 100%; object-fit: cover; }
@@ -67,6 +97,13 @@
             .page-head h1 { font-size: 22px; }
             .section-title { font-size: 20px; }
         }
+        @media screen and (max-width: 480px) {
+    .cta-wrap { margin: -10px auto 16px; padding: 0 12px; }
+    .cta-card { padding: 14px 12px; }
+    .cta-card h3 { font-size: 16px; }
+    .cta-card p { font-size: 13px; margin-bottom: 12px; }
+    .cta-btn { padding: 10px 14px; font-size: 13px; width: 100%; justify-content: center; }
+}
     </style>
 </head>
 <body>
