@@ -299,17 +299,18 @@
                                     int totalRev = rs.getInt("total_reviews");
                                     boolean bkmk = rs.getInt("bookmarked") == 1;
                                     
-                                    // FIXED IMAGE LOGIC
-                                    String imgUrl = request.getContextPath() + "/image/background.jpg";
-                                    if (img != null && !img.trim().isEmpty()) {
-                                        if (img.startsWith("sub_")) {
-                                            imgUrl = request.getContextPath() + "/LocationImageServlet?file=" + URLEncoder.encode(img.trim(), "UTF-8");
-                                        } else if (img.startsWith("business_")) {
-                                            imgUrl = request.getContextPath() + "/uploads/" + URLEncoder.encode(img.trim(), "UTF-8");
-                                        } else {
-                                            imgUrl = request.getContextPath() + "/image/" + img.trim();
-                                        }
-                                    }
+                                   String imgUrl = request.getContextPath() + "/image/background.jpg";
+if (img != null && !img.trim().isEmpty()) {
+    if (img.startsWith("http://") || img.startsWith("https://")) {
+        imgUrl = img;
+    } else if (img.startsWith("sub_")) {
+        imgUrl = request.getContextPath() + "/LocationImageServlet?file=" + URLEncoder.encode(img.trim(), "UTF-8");
+    } else if (img.startsWith("business_")) {
+        imgUrl = request.getContextPath() + "/uploads/" + URLEncoder.encode(img.trim(), "UTF-8");
+    } else {
+        imgUrl = request.getContextPath() + "/image/" + img.trim();
+    }
+}
                 %>
                 <div class="treasure-card" id="loc-<%= locId%>">
                     <img src="<%= imgUrl%>" onerror="this.onerror=null; this.src='<%= request.getContextPath() %>/image/background.jpg';" alt="<%= name%>" class="card-image">
