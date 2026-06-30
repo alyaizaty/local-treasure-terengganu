@@ -335,7 +335,7 @@ if (img != null && !img.trim().isEmpty()) {
                 </div>
                 <%
                                 }
-                                if (!any) {
+                               if (!any) {
                                     out.println("<p style='width:100%;text-align:center;color:#666;'>No locations found.</p>");
                                 }
                             }
@@ -344,6 +344,11 @@ if (img != null && !img.trim().isEmpty()) {
                         out.println("<p style='color:red;'>Error: " + e.getMessage() + "</p>");
                     }
                 %>
+            </div>
+            <div style="text-align:center; margin-top:24px;">
+                <a href="treasures.jsp" class="card-btn" style="display:inline-block; padding:14px 32px; font-size:15px;">
+                    <i class="fas fa-arrow-right"></i> Load More / View All Locations
+                </a>
             </div>
         </section>
    

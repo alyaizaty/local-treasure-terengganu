@@ -126,10 +126,23 @@ public class BusinessSignupServlet extends HttpServlet {
             b.setCategoryId(categoryId);
             b.setImage(fileName);
 
-            new BusinessDAO().insertBusinessAndGetId(conn, b);
+            int businessId = new BusinessDAO().insertBusinessAndGetId(conn, b);
 
-            conn.commit();
+// ===== Auto-create location entry for this business =====
+try (java.sql.PreparedStatement ps = conn.prepareStatement(
+        "INSERT INTO location (name, description, business_id, category_id, image, is_featured) " +
+        "VALUES (?, ?, ?, ?, ?, 0)")) {
+    ps.setString(1, bName);
+    ps.setString(2, desc);
+    ps.setInt(3, businessId);
+    ps.setInt(4, categoryId);
+    ps.setString(5, fileName);
+    ps.executeUpdate();
+}
 
+conn.commit();
+
+          
             response.sendRedirect("business_signup.jsp?success=1");
 
         } catch (Exception e) {

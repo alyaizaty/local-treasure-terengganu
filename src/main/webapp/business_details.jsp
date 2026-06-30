@@ -209,9 +209,6 @@
 </head>
 <body>
 
-<div style="background:#000; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; color:#fff;">
-    <a href="index.jsp" style="color:#fff; text-decoration:none; font-weight:bold; font-size:18px;">Local Treasure Terengganu</a>
-</div>
 
 <div class="wrap">
     <a href="index.jsp" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Homepage</a>
