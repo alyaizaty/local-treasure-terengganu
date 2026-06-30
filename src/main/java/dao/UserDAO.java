@@ -163,4 +163,12 @@ public int getUserIdByUsernameOrEmail(String username, String email) {
             return ps.executeUpdate() == 1;
         }
     }
+    public void updateProfilePicture(Connection conn, int userId, String profilePicture) throws Exception {
+    String sql = "UPDATE users SET profile_picture = ? WHERE id = ?";
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, profilePicture);
+        ps.setInt(2, userId);
+        ps.executeUpdate();
+    }
+}
 }

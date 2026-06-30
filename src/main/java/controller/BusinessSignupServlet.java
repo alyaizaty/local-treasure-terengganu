@@ -7,6 +7,7 @@ import model.User;
 import util.DBConnection;
 import util.PasswordUtil;
 import util.BusinessImageUploadUtil;
+import util.ProfileUploadUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -78,6 +79,20 @@ public class BusinessSignupServlet extends HttpServlet {
 
             int userId = new UserDAO().insertUserAndGetId(conn, user);
 
+            // ===== Profile Picture (Cloudinary) =====
+            Part profilePart = request.getPart("profilePicture");
+            if (profilePart != null && profilePart.getSize() > 0) {
+                String ctype = profilePart.getContentType();
+                if (ctype != null && ctype.toLowerCase().startsWith("image/")) {
+                    ProfileUploadUtil.ensureUploadDirectoryExists();
+                    String profileUrl = ProfileUploadUtil.saveProfileImage(profilePart, userId);
+                    if (profileUrl != null) {
+                        new UserDAO().updateProfilePicture(conn, userId, profileUrl);
+                    }
+                }
+            }
+
+            // ===== Business Image (local storage) =====
             String fileName = "default_business.jpg";
             Part filePart = request.getPart("businessImage");
 

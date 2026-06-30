@@ -1,7 +1,6 @@
 package controller;
 
 import util.DBConnection;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -11,7 +10,6 @@ import java.sql.PreparedStatement;
 
 @WebServlet(name = "FeatureLocationServlet", urlPatterns = {"/FeatureLocationServlet"})
 public class FeatureLocationServlet extends HttpServlet {
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -24,6 +22,11 @@ public class FeatureLocationServlet extends HttpServlet {
             return;
         }
 
+        String tab = request.getParameter("tab");
+        if (tab == null || tab.trim().isEmpty()) {
+            tab = "locations";
+        }
+
         try {
             int locationId = Integer.parseInt(request.getParameter("locationId"));
             int currentStatus = Integer.parseInt(request.getParameter("currentStatus"));
@@ -32,19 +35,18 @@ public class FeatureLocationServlet extends HttpServlet {
             try (Connection conn = DBConnection.getConnection();
                  PreparedStatement ps = conn.prepareStatement(
                          "UPDATE location SET is_featured = ? WHERE location_id = ?")) {
-
                 ps.setInt(1, newStatus);
                 ps.setInt(2, locationId);
                 ps.executeUpdate();
             }
 
             response.sendRedirect(request.getContextPath()
-                    + "/ContentDashboardServlet?tab=locations&msg=Featured status updated");
+                    + "/ContentDashboardServlet?tab=" + tab + "&msg=Featured status updated");
 
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath()
-                    + "/ContentDashboardServlet?tab=locations&err=Failed to update featured status");
+                    + "/ContentDashboardServlet?tab=" + tab + "&err=Failed to update featured status");
         }
     }
 }

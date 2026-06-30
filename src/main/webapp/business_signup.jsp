@@ -249,6 +249,10 @@
                         <label>Email *</label>
                         <input type="email" name="email" required>
                     </div>
+                    <div class="form-row">
+    <label>Profile Picture</label>
+    <input type="file" id="profilePicture" name="profilePicture" accept="image/*">
+</div>
 
                     <div class="two-col">
                         <div class="form-row">
