@@ -326,26 +326,7 @@ try (Connection conn = DBConnection.getConnection()) {
 
                 int likeCount = rs.getInt("like_count");
                 boolean userLiked = rs.getInt("user_liked") > 0;
-%>  try (PreparedStatement psReview = conn.prepareStatement(reviewSql)) {
-                    int idx = 1;
-                    if (loggedIn) {
-                        psReview.setInt(idx++, userId);
-                    }
-                    psReview.setInt(idx, targetLocationId);
-                    try (ResultSet rs = psReview.executeQuery()) {
-                        boolean hasReviews = false;
-                        while (rs.next()) {
-                            hasReviews = true;
-                            int reviewId = rs.getInt("review_id");
-                            int reviewOwnerId = rs.getInt("user_id");
-                            int rating = rs.getInt("rating");
-                            String rText = rs.getString("review_text");
-                            String rDate = rs.getString("review_date");
-                            String rUser = rs.getString("display_name");
-                            String mainReviewImage = rs.getString("main_review_image");
-                            int likeCount = rs.getInt("like_count");
-                            boolean userLiked = rs.getInt("user_liked") > 0;
-        %>
+%>  
                             <div class="reviewItem" id="review-<%= reviewId %>">
                                 <div class="reviewHead">
                                     <div>
@@ -387,25 +368,7 @@ try (Connection conn = DBConnection.getConnection()) {
                                 <p style="margin:10px 0; color:#374151; line-height:1.6;">
                                     <%= rText == null ? "" : rText %>
                                 </p>
-                                
-                         <%-- DISPLAY MAIN REVIEW IMAGE SAFELY --%>
-<% if(mainReviewImage != null && !mainReviewImage.trim().isEmpty()) { %>
-    <div style="margin-top:10px; margin-bottom: 10px;">
-        <%
-            String reviewImgUrl;
-            if (mainReviewImage.startsWith("http://") || mainReviewImage.startsWith("https://")) {
-                reviewImgUrl = mainReviewImage;
-            } else {
-                reviewImgUrl = request.getContextPath() + "/image/background.jpg";
-            }
-        %>
-        <img src="<%= reviewImgUrl %>"
-             onerror="this.onerror=null; this.src='<%= request.getContextPath() %>/image/background.jpg';"
-             style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #eee; object-fit: cover;" 
-             alt="Main Review Image">
-    </div>
-<% } %>
-
+                        
 <%-- DISPLAY GALLERY IMAGES --%>
 <div class="gallery">
 <%

@@ -26,7 +26,9 @@ public class ContentDashboardServlet extends HttpServlet {
         }
 
         String tab = request.getParameter("tab");
-        if (tab == null || tab.trim().isEmpty()) tab = "pending";
+        if (tab == null || tab.trim().isEmpty()) {
+            tab = "pending";
+        }
         tab = tab.toLowerCase();
 
         switch (tab) {
@@ -76,17 +78,16 @@ public class ContentDashboardServlet extends HttpServlet {
             totalComments = count(conn, "SELECT COUNT(*) FROM comments");
 
             // 1. PENDING APPROVALS
-            String sqlPending =
-                "SELECT s.submission_id, s.user_id, s.name, s.category, s.city, s.state, s.gmaps_link, " +
-                "(SELECT i.file_name FROM location_submission_images i " +
-                " WHERE i.submission_id = s.submission_id " +
-                " ORDER BY i.created_at ASC, i.image_id ASC LIMIT 1) AS first_image " +
-                "FROM location_submission s " +
-                "WHERE s.status='PENDING' " +
-                "ORDER BY s.submission_id DESC";
+            String sqlPending
+                    = "SELECT s.submission_id, s.user_id, s.name, s.category, s.city, s.state, s.gmaps_link, "
+                    + "(SELECT i.file_name FROM location_submission_images i "
+                    + " WHERE i.submission_id = s.submission_id "
+                    + " ORDER BY i.created_at ASC, i.image_id ASC LIMIT 1) AS first_image "
+                    + "FROM location_submission s "
+                    + "WHERE s.status='PENDING' "
+                    + "ORDER BY s.submission_id DESC";
 
-            try (PreparedStatement ps = conn.prepareStatement(sqlPending);
-                 ResultSet rs = ps.executeQuery()) {
+            try (PreparedStatement ps = conn.prepareStatement(sqlPending); ResultSet rs = ps.executeQuery()) {
 
                 while (rs.next()) {
                     int id = rs.getInt("submission_id");
@@ -95,7 +96,7 @@ public class ContentDashboardServlet extends HttpServlet {
                     pendingRows.append("<tr>");
                     pendingRows.append("<td>#").append(id).append("</td>");
                     pendingRows.append("<td><img class='thumb' src='").append(imgUrl)
-                               .append("' onerror=\"this.onerror=null; this.src='").append(defaultBg).append("';\"></td>");
+                            .append("' onerror=\"this.onerror=null; this.src='").append(defaultBg).append("';\"></td>");
                     pendingRows.append("<td>").append(rs.getInt("user_id")).append("</td>");
                     pendingRows.append("<td><b>").append(h(rs.getString("name"))).append("</b></td>");
                     pendingRows.append("<td>").append(h(rs.getString("category"))).append("</td>");
@@ -129,109 +130,26 @@ public class ContentDashboardServlet extends HttpServlet {
                 }
             }
 
-            // 2. ALL LOCATIONS
-            String sqlLoc =
-                "SELECT l.location_id, l.category_id, l.name AS loc_name, b.business_name, " +
-                "l.description, l.image, l.is_featured " +
-                "FROM location l " +
-                "LEFT JOIN businesses b ON l.business_id = b.business_id " +
-                "ORDER BY l.location_id DESC";
+           // 2. ALL LOCATIONS
+String sqlLoc =
+    "SELECT l.location_id, l.category_id, l.name AS loc_name, " +
+    "l.description, l.image, l.is_featured " +
+    "FROM location l " +
+    "WHERE l.business_id IS NULL " +
+    "ORDER BY l.location_id DESC";
 
-            try (PreparedStatement ps = conn.prepareStatement(sqlLoc);
-                 ResultSet rs = ps.executeQuery()) {
-
-                while (rs.next()) {
-                    int lid = rs.getInt("location_id");
-                    int isFeatured = rs.getInt("is_featured");
-                    String bName = rs.getString("business_name");
-                    String locName = rs.getString("loc_name");
-
-                    String imgUrl = resolveImageUrl(rs.getString("image"), contextPath);
-
-                    String finalName = h(locName);
-                    if (bName != null && !bName.trim().isEmpty()) {
-                        finalName = h(bName) + "<br><span class='badge-featured' style='background:#8b5cf6;color:white;font-size:10px;'>Registered Business</span>";
-                    }
-
-                    String desc = rs.getString("description");
-                    String preview = desc == null ? "" : desc.trim();
-                    if (preview.length() > 90) preview = preview.substring(0, 90) + "...";
-
-                    StringBuilder row = new StringBuilder();
-                    row.append("<tr>");
-                    row.append("<td>#").append(lid).append("</td>");
-                    row.append("<td><img class='thumb' src='").append(imgUrl)
-                       .append("' onerror=\"this.onerror=null; this.src='").append(defaultBg).append("';\"></td>");
-                    row.append("<td>").append(rs.getInt("category_id")).append("</td>");
-                    row.append("<td><b>").append(finalName).append("</b></td>");
-                    row.append("<td>").append(h(preview)).append("</td>");
-                    row.append("<td>").append(isFeatured == 1 ? "<span class='badge-featured'>Featured</span>" : "<span class='badge-normal'>Normal</span>").append("</td>");
-
-                    row.append("<td class='action-cell'>");
-                    row.append("<a class='btn btn-view' href='").append(contextPath).append("/locationDetails?id=").append(lid).append("'>View</a>");
-
-                    row.append("<form method='post' action='").append(contextPath).append("/FeatureLocationServlet'>");
-                    row.append("<input type='hidden' name='locationId' value='").append(lid).append("'>");
-                    row.append("<input type='hidden' name='currentStatus' value='").append(isFeatured).append("'>");
-row.append("<form method='post' action='").append(contextPath).append("/FeatureLocationServlet'>");
-row.append("<input type='hidden' name='locationId' value='").append(lid).append("'>");
-row.append("<input type='hidden' name='currentStatus' value='").append(isFeatured).append("'>");
-row.append("<input type='hidden' name='tab' value='locations'>");
-                    if (isFeatured == 1) {
-                        row.append("<button class='btn btn-unfeature' type='submit'>Unfeature</button>");
-                    } else {
-                        row.append("<button class='btn btn-feature' type='submit'>Feature</button>");
-                    }
-                    row.append("</form>");
-
-                    if (bName != null && !bName.trim().isEmpty()) {
-                        row.append("<span style='color:#94a3b8; font-size:12px; font-weight:700;'>Manage in Business tab</span>");
-                    } else {
-                        row.append("<form method='post' action='").append(contextPath).append("/DeleteLocationServlet'>");
-                        row.append("<input type='hidden' name='locationId' value='").append(lid).append("'>");
-                        row.append("<button class='btn btn-delete' type='submit' onclick=\"return confirm('Delete this location?')\">Delete</button>");
-                        row.append("</form>");
-                    }
-
-                    row.append("</td>");
-                    row.append("</tr>");
-
-                    locationRows.append(row);
-
-                    if (isFeatured == 1) {
-                        featuredRows.append(row);
-                    }
-                }
-            }
-
-            // 3. BUSINESSES
-            String sqlBusiness =
-                "SELECT b.business_id, b.business_name, b.description, b.address, b.contact_phone, " +
-                "b.operating_hours, b.image, c.name AS category_name, u.username AS owner_username, " +
-                "l.location_id, IFNULL(l.is_featured, 0) AS is_featured, " +
-                "IFNULL(rev.avg_rating, 0) AS avg_rating, IFNULL(rev.total_reviews, 0) AS total_reviews " +
-                "FROM businesses b " +
-                "LEFT JOIN users u ON b.user_id = u.id " +
-                "LEFT JOIN categories c ON b.category_id = c.category_id " +
-                "LEFT JOIN location l ON b.business_id = l.business_id " +
-                "LEFT JOIN ( " +
-                "   SELECT l2.business_id, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS total_reviews " +
-                "   FROM location l2 LEFT JOIN reviews r ON l2.location_id = r.location_id " +
-                "   GROUP BY l2.business_id " +
-                ") rev ON b.business_id = rev.business_id " +
-              "GROUP BY b.business_id, l.location_id " +
-"ORDER BY b.business_id DESC";
-
-           try (PreparedStatement ps = conn.prepareStatement(sqlBusiness);
+try (PreparedStatement ps = conn.prepareStatement(sqlLoc);
      ResultSet rs = ps.executeQuery()) {
 
     while (rs.next()) {
 
-        int bid = rs.getInt("business_id");
-        int locId = rs.getInt("location_id");
+        int lid = rs.getInt("location_id");
         int isFeatured = rs.getInt("is_featured");
 
+        String locName = rs.getString("loc_name");
         String imgUrl = resolveImageUrl(rs.getString("image"), contextPath);
+
+        String finalName = h(locName);
 
         String desc = rs.getString("description");
         String preview = desc == null ? "" : desc.trim();
@@ -239,112 +157,233 @@ row.append("<input type='hidden' name='tab' value='locations'>");
             preview = preview.substring(0, 90) + "...";
         }
 
-        StringBuilder bizRow = new StringBuilder();
+        StringBuilder row = new StringBuilder();
 
-        bizRow.append("<tr>");
+        row.append("<tr>");
 
-        bizRow.append("<td>#").append(bid).append("</td>");
+        row.append("<td>#").append(lid).append("</td>");
 
-        bizRow.append("<td><img class='thumb' src='")
-              .append(imgUrl)
-              .append("' onerror=\"this.onerror=null; this.src='")
-              .append(defaultBg)
-              .append("';\"></td>");
+        row.append("<td><img class='thumb' src='")
+           .append(imgUrl)
+           .append("' onerror=\"this.onerror=null; this.src='")
+           .append(defaultBg)
+           .append("';\"></td>");
 
-        bizRow.append("<td><b>")
-              .append(h(rs.getString("business_name")))
-              .append("</b><br><small>")
-              .append(h(rs.getString("category_name")))
-              .append("</small></td>");
+        row.append("<td>")
+           .append(rs.getInt("category_id"))
+           .append("</td>");
 
-        bizRow.append("<td>")
-              .append(h(preview))
-              .append("</td>");
+        row.append("<td><b>")
+           .append(finalName)
+           .append("</b></td>");
 
-        bizRow.append("<td>")
-              .append(h(rs.getString("address")))
-              .append("</td>");
+        row.append("<td>")
+           .append(h(preview))
+           .append("</td>");
 
-        bizRow.append("<td>")
-              .append(h(rs.getString("contact_phone")))
-              .append("</td>");
+        row.append("<td>")
+           .append(isFeatured == 1
+                ? "<span class='badge-featured'>Featured</span>"
+                : "<span class='badge-normal'>Normal</span>")
+           .append("</td>");
 
-        bizRow.append("<td>@")
-              .append(h(rs.getString("owner_username")))
-              .append("</td>");
+        row.append("<td class='action-cell'>");
 
-        bizRow.append("<td>")
-              .append(String.format(Locale.US, "%.1f", rs.getDouble("avg_rating")))
-              .append(" / ")
-              .append(rs.getInt("total_reviews"))
-              .append(" reviews</td>");
+        // View
+        row.append("<a class='btn btn-view' href='")
+           .append(contextPath)
+           .append("/location_details.jsp?id=")
+           .append(lid)
+           .append("'>View</a>");
 
-        bizRow.append("<td class='action-cell'>");
+        // Feature / Unfeature
+        row.append("<form method='post' action='")
+           .append(contextPath)
+           .append("/FeatureLocationServlet'>");
 
-        if (locId > 0) {
+        row.append("<input type='hidden' name='locationId' value='")
+           .append(lid)
+           .append("'>");
 
-            bizRow.append("<form method='post' action='")
-                  .append(contextPath)
-                  .append("/FeatureLocationServlet'>");
+        row.append("<input type='hidden' name='currentStatus' value='")
+           .append(isFeatured)
+           .append("'>");
 
-            bizRow.append("<input type='hidden' name='locationId' value='")
-                  .append(locId)
-                  .append("'>");
+        row.append("<input type='hidden' name='tab' value='locations'>");
 
-            bizRow.append("<input type='hidden' name='currentStatus' value='")
-                  .append(isFeatured)
-                  .append("'>");
-
-            bizRow.append("<input type='hidden' name='tab' value='business'>");
-
-            if (isFeatured == 1) {
-                bizRow.append("<button class='btn btn-unfeature' type='submit'>Unfeature</button>");
-            } else {
-                bizRow.append("<button class='btn btn-feature' type='submit'>Feature</button>");
-            }
-
-            bizRow.append("</form>");
+        if (isFeatured == 1) {
+            row.append("<button class='btn btn-unfeature' type='submit'>Unfeature</button>");
+        } else {
+            row.append("<button class='btn btn-feature' type='submit'>Feature</button>");
         }
 
-        bizRow.append("<form method='post' action='")
-              .append(contextPath)
-              .append("/DeleteBusinessServlet'>");
+        row.append("</form>");
 
-        bizRow.append("<input type='hidden' name='businessId' value='")
-              .append(bid)
-              .append("'>");
+        // Delete
+        row.append("<form method='post' action='")
+           .append(contextPath)
+           .append("/DeleteLocationServlet'>");
 
-        bizRow.append("<button class='btn btn-delete' type='submit' ")
-              .append("onclick=\"return confirm('Delete this business and its location?')\">")
-              .append("Delete</button>");
+        row.append("<input type='hidden' name='locationId' value='")
+           .append(lid)
+           .append("'>");
 
-        bizRow.append("</form>");
+        row.append("<button class='btn btn-delete' type='submit' ")
+           .append("onclick=\"return confirm('Delete this location?')\">")
+           .append("Delete</button>");
 
-        bizRow.append("</td>");
-        bizRow.append("</tr>");
+        row.append("</form>");
 
-       
-        businessRows.append(bizRow);
+        row.append("</td>");
+        row.append("</tr>");
+
+        locationRows.append(row);
+
+        if (isFeatured == 1) {
+            featuredRows.append(row);
+        }
     }
 }
+            // 3. BUSINESSES
+            String sqlBusiness
+                    = "SELECT b.business_id, b.business_name, b.description, b.address, b.contact_phone, "
+                    + "b.operating_hours, b.image, c.name AS category_name, u.username AS owner_username, "
+                    + "l.location_id, IFNULL(l.is_featured, 0) AS is_featured, "
+                    + "IFNULL(rev.avg_rating, 0) AS avg_rating, IFNULL(rev.total_reviews, 0) AS total_reviews "
+                    + "FROM businesses b "
+                    + "LEFT JOIN users u ON b.user_id = u.id "
+                    + "LEFT JOIN categories c ON b.category_id = c.category_id "
+                    + "LEFT JOIN location l ON b.business_id = l.business_id "
+                    + "LEFT JOIN ( "
+                    + "   SELECT l2.business_id, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS total_reviews "
+                    + "   FROM location l2 LEFT JOIN reviews r ON l2.location_id = r.location_id "
+                    + "   GROUP BY l2.business_id "
+                    + ") rev ON b.business_id = rev.business_id "
+                    + "GROUP BY b.business_id, l.location_id "
+                    + "ORDER BY b.business_id DESC";
+
+            try (PreparedStatement ps = conn.prepareStatement(sqlBusiness); ResultSet rs = ps.executeQuery()) {
+
+                while (rs.next()) {
+
+                    int bid = rs.getInt("business_id");
+                    int locId = rs.getInt("location_id");
+                    int isFeatured = rs.getInt("is_featured");
+
+                    String imgUrl = resolveImageUrl(rs.getString("image"), contextPath);
+
+                    String desc = rs.getString("description");
+                    String preview = desc == null ? "" : desc.trim();
+                    if (preview.length() > 90) {
+                        preview = preview.substring(0, 90) + "...";
+                    }
+
+                    StringBuilder bizRow = new StringBuilder();
+
+                    bizRow.append("<tr>");
+
+                    bizRow.append("<td>#").append(bid).append("</td>");
+
+                    bizRow.append("<td><img class='thumb' src='")
+                            .append(imgUrl)
+                            .append("' onerror=\"this.onerror=null; this.src='")
+                            .append(defaultBg)
+                            .append("';\"></td>");
+
+                    bizRow.append("<td><b>")
+                            .append(h(rs.getString("business_name")))
+                            .append("</b><br><small>")
+                            .append(h(rs.getString("category_name")))
+                            .append("</small></td>");
+
+                    bizRow.append("<td>")
+                            .append(h(preview))
+                            .append("</td>");
+
+                    bizRow.append("<td>")
+                            .append(h(rs.getString("address")))
+                            .append("</td>");
+
+                    bizRow.append("<td>")
+                            .append(h(rs.getString("contact_phone")))
+                            .append("</td>");
+
+                    bizRow.append("<td>@")
+                            .append(h(rs.getString("owner_username")))
+                            .append("</td>");
+
+                    bizRow.append("<td>")
+                            .append(String.format(Locale.US, "%.1f", rs.getDouble("avg_rating")))
+                            .append(" / ")
+                            .append(rs.getInt("total_reviews"))
+                            .append(" reviews</td>");
+
+                    bizRow.append("<td class='action-cell'>");
+
+                    if (locId > 0) {
+
+                        bizRow.append("<form method='post' action='")
+                                .append(contextPath)
+                                .append("/FeatureLocationServlet'>");
+
+                        bizRow.append("<input type='hidden' name='locationId' value='")
+                                .append(locId)
+                                .append("'>");
+
+                        bizRow.append("<input type='hidden' name='currentStatus' value='")
+                                .append(isFeatured)
+                                .append("'>");
+
+                        bizRow.append("<input type='hidden' name='tab' value='business'>");
+
+                        if (isFeatured == 1) {
+                            bizRow.append("<button class='btn btn-unfeature' type='submit'>Unfeature</button>");
+                        } else {
+                            bizRow.append("<button class='btn btn-feature' type='submit'>Feature</button>");
+                        }
+
+                        bizRow.append("</form>");
+                    }
+
+                    bizRow.append("<form method='post' action='")
+                            .append(contextPath)
+                            .append("/DeleteBusinessServlet'>");
+
+                    bizRow.append("<input type='hidden' name='businessId' value='")
+                            .append(bid)
+                            .append("'>");
+
+                    bizRow.append("<button class='btn btn-delete' type='submit' ")
+                            .append("onclick=\"return confirm('Delete this business and its location?')\">")
+                            .append("Delete</button>");
+
+                    bizRow.append("</form>");
+
+                    bizRow.append("</td>");
+                    bizRow.append("</tr>");
+
+                    businessRows.append(bizRow);
+                }
+            }
 
             // 4. REVIEWS
-            String sqlReviews =
-                "SELECT r.review_id, r.rating, r.review_text, r.review_date, " +
-                "COALESCE(u.username, CONCAT('User #', r.user_id)) AS username, " +
-                "l.name AS location_name, b.business_name, " +
-                "(SELECT COUNT(*) FROM comments c WHERE c.review_id = r.review_id) AS total_comments " +
-                "FROM reviews r " +
-                "LEFT JOIN users u ON r.user_id = u.id " +
-                "LEFT JOIN location l ON r.location_id = l.location_id " +
-                "LEFT JOIN businesses b ON l.business_id = b.business_id " +
-                "ORDER BY r.review_id DESC";
+            String sqlReviews
+                    = "SELECT r.review_id, r.rating, r.review_text, r.review_date, "
+                    + "COALESCE(u.username, CONCAT('User #', r.user_id)) AS username, "
+                    + "l.name AS location_name, b.business_name, "
+                    + "(SELECT COUNT(*) FROM comments c WHERE c.review_id = r.review_id) AS total_comments "
+                    + "FROM reviews r "
+                    + "LEFT JOIN users u ON r.user_id = u.id "
+                    + "LEFT JOIN location l ON r.location_id = l.location_id "
+                    + "LEFT JOIN businesses b ON l.business_id = b.business_id "
+                    + "ORDER BY r.review_id DESC";
 
-            try (PreparedStatement ps = conn.prepareStatement(sqlReviews);
-                 ResultSet rs = ps.executeQuery()) {
+            try (PreparedStatement ps = conn.prepareStatement(sqlReviews); ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String target = rs.getString("business_name");
-                    if (target == null || target.trim().isEmpty()) target = rs.getString("location_name");
+                    if (target == null || target.trim().isEmpty()) {
+                        target = rs.getString("location_name");
+                    }
 
                     reviewRows.append("<tr>");
                     reviewRows.append("<td>#").append(rs.getInt("review_id")).append("</td>");
@@ -359,22 +398,23 @@ row.append("<input type='hidden' name='tab' value='locations'>");
             }
 
             // 5. COMMENTS
-            String sqlComments =
-                "SELECT c.comment_id, c.comment_text, c.comment_date, " +
-                "COALESCE(u.username, CONCAT('User #', c.user_id)) AS username, " +
-                "r.review_id, l.name AS location_name, b.business_name " +
-                "FROM comments c " +
-                "LEFT JOIN users u ON c.user_id = u.id " +
-                "LEFT JOIN reviews r ON c.review_id = r.review_id " +
-                "LEFT JOIN location l ON r.location_id = l.location_id " +
-                "LEFT JOIN businesses b ON l.business_id = b.business_id " +
-                "ORDER BY c.comment_id DESC";
+            String sqlComments
+                    = "SELECT c.comment_id, c.comment_text, c.comment_date, "
+                    + "COALESCE(u.username, CONCAT('User #', c.user_id)) AS username, "
+                    + "r.review_id, l.name AS location_name, b.business_name "
+                    + "FROM comments c "
+                    + "LEFT JOIN users u ON c.user_id = u.id "
+                    + "LEFT JOIN reviews r ON c.review_id = r.review_id "
+                    + "LEFT JOIN location l ON r.location_id = l.location_id "
+                    + "LEFT JOIN businesses b ON l.business_id = b.business_id "
+                    + "ORDER BY c.comment_id DESC";
 
-            try (PreparedStatement ps = conn.prepareStatement(sqlComments);
-                 ResultSet rs = ps.executeQuery()) {
+            try (PreparedStatement ps = conn.prepareStatement(sqlComments); ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String target = rs.getString("business_name");
-                    if (target == null || target.trim().isEmpty()) target = rs.getString("location_name");
+                    if (target == null || target.trim().isEmpty()) {
+                        target = rs.getString("location_name");
+                    }
 
                     commentRows.append("<tr>");
                     commentRows.append("<td>#").append(rs.getInt("comment_id")).append("</td>");
@@ -404,15 +444,14 @@ row.append("<input type='hidden' name='tab' value='locations'>");
                 cal.add(Calendar.DAY_OF_MONTH, 1);
             }
 
-            String sqlActivity =
-                "SELECT DATE(activity_date) AS d, activity_type, COUNT(*) AS total " +
-                "FROM user_activity " +
-                "WHERE activity_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) " +
-                "GROUP BY DATE(activity_date), activity_type " +
-                "ORDER BY d ASC";
+            String sqlActivity
+                    = "SELECT DATE(activity_date) AS d, activity_type, COUNT(*) AS total "
+                    + "FROM user_activity "
+                    + "WHERE activity_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) "
+                    + "GROUP BY DATE(activity_date), activity_type "
+                    + "ORDER BY d ASC";
 
-            try (PreparedStatement ps = conn.prepareStatement(sqlActivity);
-                 ResultSet rs = ps.executeQuery()) {
+            try (PreparedStatement ps = conn.prepareStatement(sqlActivity); ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String d = rs.getString("d");
                     String type = rs.getString("activity_type");
@@ -424,10 +463,15 @@ row.append("<input type='hidden' name='tab' value='locations'>");
                         signupMap.put(d, total);
                     }
                 }
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
 
             boolean hasSignups = false;
-            for (int val : signupMap.values()) if (val > 0) hasSignups = true;
+            for (int val : signupMap.values()) {
+                if (val > 0) {
+                    hasSignups = true;
+                }
+            }
 
             if (!hasSignups) {
                 try {
@@ -435,10 +479,13 @@ row.append("<input type='hidden' name='tab' value='locations'>");
                     try (PreparedStatement ps = conn.prepareStatement(fbSql); ResultSet rs = ps.executeQuery()) {
                         while (rs.next()) {
                             String d = rs.getString("d");
-                            if (signupMap.containsKey(d)) signupMap.put(d, rs.getInt("total"));
+                            if (signupMap.containsKey(d)) {
+                                signupMap.put(d, rs.getInt("total"));
+                            }
                         }
                     }
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
             }
 
             try {
@@ -446,10 +493,13 @@ row.append("<input type='hidden' name='tab' value='locations'>");
                 try (PreparedStatement ps = conn.prepareStatement(revSql); ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         String d = rs.getString("d");
-                        if (reviewMap.containsKey(d)) reviewMap.put(d, rs.getInt("total"));
+                        if (reviewMap.containsKey(d)) {
+                            reviewMap.put(d, rs.getInt("total"));
+                        }
                     }
                 }
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
 
             for (String d : loginMap.keySet()) {
                 chartLabels.add(d);
@@ -507,16 +557,19 @@ row.append("<input type='hidden' name='tab' value='locations'>");
     }
 
     private int count(Connection conn, String sql) {
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
         } catch (Exception ignored) {
         }
         return 0;
     }
 
     private static String h(String s) {
-        if (s == null) return "";
+        if (s == null) {
+            return "";
+        }
         return s.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
@@ -525,16 +578,22 @@ row.append("<input type='hidden' name='tab' value='locations'>");
     }
 
     private static String shorten(String s, int max) {
-        if (s == null) return "";
+        if (s == null) {
+            return "";
+        }
         s = s.trim();
-        if (s.length() <= max) return s;
+        if (s.length() <= max) {
+            return s;
+        }
         return s.substring(0, max - 3) + "...";
     }
 
     private static String toJsonStringArray(List<String> list) {
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < list.size(); i++) {
-            if (i > 0) sb.append(",");
+            if (i > 0) {
+                sb.append(",");
+            }
             sb.append("\"").append(list.get(i).replace("\"", "\\\"")).append("\"");
         }
         sb.append("]");
