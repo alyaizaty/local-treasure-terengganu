@@ -222,60 +222,111 @@ row.append("<input type='hidden' name='tab' value='locations'>");
               "GROUP BY b.business_id, l.location_id " +
 "ORDER BY b.business_id DESC";
 
-            try (PreparedStatement ps = conn.prepareStatement(sqlBusiness);
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    int bid = rs.getInt("business_id");
-                    int locId = rs.getInt("location_id");
-                    int isFeatured = rs.getInt("is_featured");
-                    String imgUrl = resolveImageUrl(rs.getString("image"), contextPath);
+           try (PreparedStatement ps = conn.prepareStatement(sqlBusiness);
+     ResultSet rs = ps.executeQuery()) {
 
-                    String desc = rs.getString("description");
-                    String preview = desc == null ? "" : desc.trim();
-                    if (preview.length() > 90) preview = preview.substring(0, 90) + "...";
+    while (rs.next()) {
 
-                    StringBuilder bizRow = new StringBuilder();
-                    bizRow.append("<tr>");
-                    bizRow.append("<td>#").append(bid).append("</td>");
-                    bizRow.append("<td><img class='thumb' src='").append(imgUrl)
-                                .append("' onerror=\"this.onerror=null; this.src='").append(defaultBg).append("';\"></td>");
-                    bizRow.append("<td><b>").append(h(rs.getString("business_name"))).append("</b><br><small>").append(h(rs.getString("category_name"))).append("</small></td>");
-                    bizRow.append("<td>").append(h(preview)).append("</td>");
-                    bizRow.append("<td>").append(h(rs.getString("address"))).append("</td>");
-                    bizRow.append("<td>").append(h(rs.getString("contact_phone"))).append("</td>");
-                    bizRow.append("<td>@").append(h(rs.getString("owner_username"))).append("</td>");
-                    bizRow.append("<td>").append(String.format(Locale.US, "%.1f", rs.getDouble("avg_rating"))).append(" / ").append(rs.getInt("total_reviews")).append(" reviews</td>");
-                    bizRow.append("<td class='action-cell'>");
+        int bid = rs.getInt("business_id");
+        int locId = rs.getInt("location_id");
+        int isFeatured = rs.getInt("is_featured");
 
-                    if (locId > 0) {
-                        bizRow.append("<form method='post' action='").append(contextPath).append("/FeatureLocationServlet'>");
-                        bizRow.append("<input type='hidden' name='locationId' value='").append(locId).append("'>");
-                        bizRow.append("<input type='hidden' name='currentStatus' value='").append(isFeatured).append("'>");
-                        if (isFeatured == 1) {
-                            bizRow.append("<button class='btn btn-unfeature' type='submit'>Unfeature</button>");
-                        } else {
-                            bizRow.append("<button class='btn btn-feature' type='submit'>Feature</button>");
-                        }
-                        bizRow.append("</form>");
-                    }
+        String imgUrl = resolveImageUrl(rs.getString("image"), contextPath);
 
-                    bizRow.append("<form method='post' action='").append(contextPath).append("/DeleteBusinessServlet'>");
-                    bizRow.append("<input type='hidden' name='businessId' value='").append(bid).append("'>");
-                    bizRow.append("<button class='btn btn-delete' type='submit' onclick=\"return confirm('Delete this business and its location?')\">Delete</button>");
-                    bizRow.append("</form>");
-bizRow.append("<form method='post' action='").append(contextPath).append("/FeatureLocationServlet'>");
-bizRow.append("<input type='hidden' name='locationId' value='").append(locId).append("'>");
-bizRow.append("<input type='hidden' name='currentStatus' value='").append(isFeatured).append("'>");
-bizRow.append("<input type='hidden' name='tab' value='business'>");
-                    bizRow.append("</td>");
-                    bizRow.append("</tr>");
+        String desc = rs.getString("description");
+        String preview = desc == null ? "" : desc.trim();
+        if (preview.length() > 90) {
+            preview = preview.substring(0, 90) + "...";
+        }
 
-                    businessRows.append(bizRow);
+        StringBuilder bizRow = new StringBuilder();
 
-                   businessRows.append(bizRow);
-                    
-                }
+        bizRow.append("<tr>");
+
+        bizRow.append("<td>#").append(bid).append("</td>");
+
+        bizRow.append("<td><img class='thumb' src='")
+              .append(imgUrl)
+              .append("' onerror=\"this.onerror=null; this.src='")
+              .append(defaultBg)
+              .append("';\"></td>");
+
+        bizRow.append("<td><b>")
+              .append(h(rs.getString("business_name")))
+              .append("</b><br><small>")
+              .append(h(rs.getString("category_name")))
+              .append("</small></td>");
+
+        bizRow.append("<td>")
+              .append(h(preview))
+              .append("</td>");
+
+        bizRow.append("<td>")
+              .append(h(rs.getString("address")))
+              .append("</td>");
+
+        bizRow.append("<td>")
+              .append(h(rs.getString("contact_phone")))
+              .append("</td>");
+
+        bizRow.append("<td>@")
+              .append(h(rs.getString("owner_username")))
+              .append("</td>");
+
+        bizRow.append("<td>")
+              .append(String.format(Locale.US, "%.1f", rs.getDouble("avg_rating")))
+              .append(" / ")
+              .append(rs.getInt("total_reviews"))
+              .append(" reviews</td>");
+
+        bizRow.append("<td class='action-cell'>");
+
+        if (locId > 0) {
+
+            bizRow.append("<form method='post' action='")
+                  .append(contextPath)
+                  .append("/FeatureLocationServlet'>");
+
+            bizRow.append("<input type='hidden' name='locationId' value='")
+                  .append(locId)
+                  .append("'>");
+
+            bizRow.append("<input type='hidden' name='currentStatus' value='")
+                  .append(isFeatured)
+                  .append("'>");
+
+            bizRow.append("<input type='hidden' name='tab' value='business'>");
+
+            if (isFeatured == 1) {
+                bizRow.append("<button class='btn btn-unfeature' type='submit'>Unfeature</button>");
+            } else {
+                bizRow.append("<button class='btn btn-feature' type='submit'>Feature</button>");
             }
+
+            bizRow.append("</form>");
+        }
+
+        bizRow.append("<form method='post' action='")
+              .append(contextPath)
+              .append("/DeleteBusinessServlet'>");
+
+        bizRow.append("<input type='hidden' name='businessId' value='")
+              .append(bid)
+              .append("'>");
+
+        bizRow.append("<button class='btn btn-delete' type='submit' ")
+              .append("onclick=\"return confirm('Delete this business and its location?')\">")
+              .append("Delete</button>");
+
+        bizRow.append("</form>");
+
+        bizRow.append("</td>");
+        bizRow.append("</tr>");
+
+       
+        businessRows.append(bizRow);
+    }
+}
 
             // 4. REVIEWS
             String sqlReviews =
