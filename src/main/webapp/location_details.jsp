@@ -99,15 +99,15 @@
     // SMART IMAGE LOGIC (FIX FOR BROKEN IMAGES)
     // ==========================================
     String imgUrl = request.getContextPath() + "/image/background.jpg";
-    if (mainImage != null && !mainImage.trim().isEmpty()) {
-        if (mainImage.startsWith("sub_")) {
+    if (mainImage.startsWith("http://") || mainImage.startsWith("https://")) {
+            imgUrl = mainImage;
+        } else if (mainImage.startsWith("sub_")) {
             imgUrl = request.getContextPath() + "/LocationImageServlet?file=" + URLEncoder.encode(mainImage.trim(), "UTF-8");
         } else if (mainImage.startsWith("business_")) {
-            imgUrl = request.getContextPath() + "/uploads/" + URLEncoder.encode(mainImage.trim(), "UTF-8");
+            imgUrl = request.getContextPath() + "/image/background.jpg";
         } else {
             imgUrl = request.getContextPath() + "/image/" + mainImage.trim();
         }
-    }
     
     // Gmaps fallback link
     if (gmapsLink == null || gmapsLink.trim().isEmpty()) {
@@ -367,11 +367,22 @@
                                     <%= rText == null ? "" : rText %>
                                 </p>
                                 
-                                <% if(mainReviewImage != null && !mainReviewImage.trim().isEmpty()) { %>
-                                    <div style="margin-top:10px; margin-bottom: 10px;">
-                                        <img src="<%= request.getContextPath() %>/ReviewImageServlet?file=<%= URLEncoder.encode(mainReviewImage, "UTF-8") %>" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #eee; object-fit: cover;" alt="Review Image">
-                                    </div>
-                                <% } %>
+                               <% if(mainReviewImage != null && !mainReviewImage.trim().isEmpty()) { %>
+    <div style="margin-top:10px; margin-bottom: 10px;">
+        <%
+            String reviewImgUrl;
+            if (mainReviewImage.startsWith("http://") || mainReviewImage.startsWith("https://")) {
+                reviewImgUrl = mainReviewImage;
+            } else {
+                reviewImgUrl = request.getContextPath() + "/image/background.jpg";
+            }
+        %>
+        <img src="<%= reviewImgUrl %>" 
+             onerror="this.onerror=null; this.src='<%= request.getContextPath() %>/image/background.jpg';"
+             style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #eee; object-fit: cover;" 
+             alt="Review Image">
+    </div>
+<% } %>
                                 
                                 <div class="gallery">
                                 <%
@@ -446,4 +457,4 @@
 </div>
 
 </body>
-</html>c
+</html>
