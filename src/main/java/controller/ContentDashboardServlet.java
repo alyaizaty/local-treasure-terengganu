@@ -219,7 +219,8 @@ row.append("<input type='hidden' name='tab' value='locations'>");
                 "   FROM location l2 LEFT JOIN reviews r ON l2.location_id = r.location_id " +
                 "   GROUP BY l2.business_id " +
                 ") rev ON b.business_id = rev.business_id " +
-                "ORDER BY b.business_id DESC";
+              "GROUP BY b.business_id, l.location_id " +
+"ORDER BY b.business_id DESC";
 
             try (PreparedStatement ps = conn.prepareStatement(sqlBusiness);
                  ResultSet rs = ps.executeQuery()) {
