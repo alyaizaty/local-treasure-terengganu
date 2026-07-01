@@ -328,30 +328,49 @@
                                     <%= rText == null ? "" : rText %>
                                 </p>
                                 
-                                <%-- DISPLAY MAIN REVIEW IMAGE SAFELY --%>
-                                <% if(mainReviewImage != null && !mainReviewImage.trim().isEmpty()) { %>
-                                    <div style="margin-top:10px; margin-bottom: 10px;">
-                                        <img src="<%= request.getContextPath() %>/ReviewImageServlet?file=<%= URLEncoder.encode(mainReviewImage, "UTF-8") %>" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #eee; object-fit: cover;" alt="Main Review Image">
-                                    </div>
-                                <% } %>
+                         <%-- DISPLAY MAIN REVIEW IMAGE SAFELY --%>
+<% if(mainReviewImage != null && !mainReviewImage.trim().isEmpty()) { %>
+    <div style="margin-top:10px; margin-bottom: 10px;">
+        <%
+            String reviewImgUrl;
+            if (mainReviewImage.startsWith("http://") || mainReviewImage.startsWith("https://")) {
+                reviewImgUrl = mainReviewImage;
+            } else {
+                reviewImgUrl = request.getContextPath() + "/image/background.jpg";
+            }
+        %>
+        <img src="<%= reviewImgUrl %>"
+             onerror="this.onerror=null; this.src='<%= request.getContextPath() %>/image/background.jpg';"
+             style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #eee; object-fit: cover;" 
+             alt="Main Review Image">
+    </div>
+<% } %>
 
-                                <%-- DISPLAY GALLERY IMAGES --%>
-                                <div class="gallery">
-                                <%
-                                    String imgQuery = "SELECT file_name FROM review_images WHERE review_id=? ORDER BY image_id ASC";
-                                    try (PreparedStatement ips = conn.prepareStatement(imgQuery)) {
-                                        ips.setInt(1, reviewId);
-                                        try (ResultSet irs = ips.executeQuery()) {
-                                            while (irs.next()) {
-                                                String fn = irs.getString("file_name");
-                                %>
-                                                <img src="<%= request.getContextPath() %>/ReviewImageServlet?file=<%= URLEncoder.encode(fn, "UTF-8") %>" alt="Gallery Review Image">
-                                <%
-                                            }
-                                        }
-                                    }
-                                %>
-                                </div>
+<%-- DISPLAY GALLERY IMAGES --%>
+<div class="gallery">
+<%
+    String imgQuery = "SELECT file_name FROM review_images WHERE review_id=? ORDER BY image_id ASC";
+    try (PreparedStatement ips = conn.prepareStatement(imgQuery)) {
+        ips.setInt(1, reviewId);
+        try (ResultSet irs = ips.executeQuery()) {
+            while (irs.next()) {
+                String fn = irs.getString("file_name");
+                String galleryImgUrl;
+                if (fn != null && (fn.startsWith("http://") || fn.startsWith("https://"))) {
+                    galleryImgUrl = fn;
+                } else {
+                    galleryImgUrl = request.getContextPath() + "/image/background.jpg";
+                }
+%>
+                <img src="<%= galleryImgUrl %>" 
+                     onerror="this.onerror=null; this.src='<%= request.getContextPath() %>/image/background.jpg';"
+                     alt="Gallery Review Image">
+<%
+            }
+        }
+    }
+%>
+</div>
                                 
                                 <div class="commentBox">
                                     <div class="muted" style="font-weight:900;">Comments</div>
