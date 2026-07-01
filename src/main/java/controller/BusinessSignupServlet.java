@@ -93,28 +93,23 @@ public class BusinessSignupServlet extends HttpServlet {
             }
 
             // ===== Business Image (local storage) =====
-            String fileName = "default_business.jpg";
-            Part filePart = request.getPart("businessImage");
+          String fileName = "default_business.jpg";
+Part filePart = request.getPart("businessImage");
 
-            if (filePart != null && filePart.getSize() > 0) {
-                String contentType = filePart.getContentType();
+if (filePart != null && filePart.getSize() > 0) {
+    String contentType = filePart.getContentType();
 
-                if (contentType != null && contentType.toLowerCase().startsWith("image/")) {
-                    String realPath = getServletContext().getRealPath("");
-
-                    BusinessImageUploadUtil.ensureUploadDirectoryExists(realPath);
-
-                    String savedFile = BusinessImageUploadUtil.saveImage(filePart, realPath);
-
-                    if (savedFile != null && !savedFile.trim().isEmpty()) {
-                        fileName = savedFile;
-                    }
-
-                } else {
-                    redirectError(response, "Only image files are allowed.");
-                    return;
-                }
-            }
+    if (contentType != null && contentType.toLowerCase().startsWith("image/")) {
+        BusinessImageUploadUtil.ensureUploadDirectoryExists(null);
+        String cloudinaryUrl = BusinessImageUploadUtil.saveImage(filePart, null);
+        if (cloudinaryUrl != null && !cloudinaryUrl.trim().isEmpty()) {
+            fileName = cloudinaryUrl;
+        }
+    } else {
+        redirectError(response, "Only image files are allowed.");
+        return;
+    }
+}
 
             Business b = new Business();
             b.setUserId(userId);
