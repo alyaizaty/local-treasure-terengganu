@@ -253,41 +253,57 @@
 
     <div class="card" style="margin-top:16px;" id="reviewsSection">
         <h3>All User Reviews</h3>
-        <%
-            try (Connection conn = DBConnection.getConnection()) {
-                <h3>All User Reviews</h3>
-        <%
-            try (Connection conn = DBConnection.getConnection()) {
-                String reviewSql =
-                   "SELECT r.review_id, r.user_id, r.rating, r.review_text, r.review_date, " +
-"(SELECT file_name FROM review_images ri WHERE ri.review_id = r.review_id ORDER BY ri.image_id ASC LIMIT 1) AS main_review_image, " +(loggedIn
-                        ? "(SELECT COUNT(*) FROM likes lk2 WHERE lk2.review_id = r.review_id AND lk2.user_id = ?) AS user_liked "
-                        : "0 AS user_liked ") +
-                    "FROM reviews r " +
-                    "LEFT JOIN users u ON u.id = r.user_id " +
-                    "WHERE r.location_id = ? " +
-                    "ORDER BY r.review_id DESC";
-                try (PreparedStatement psReview = conn.prepareStatement(reviewSql)) {
-                    int idx = 1;
-                    if (loggedIn) {
-                        psReview.setInt(idx++, userId);
-                    }
-                    psReview.setInt(idx, targetLocationId);
-                    try (ResultSet rs = psReview.executeQuery()) {
-                        boolean hasReviews = false;
-                        while (rs.next()) {
-                            hasReviews = true;
-                            int reviewId = rs.getInt("review_id");
-                            int reviewOwnerId = rs.getInt("user_id");
-                            int rating = rs.getInt("rating");
-                            String rText = rs.getString("review_text");
-                            String rDate = rs.getString("review_date");
-                            String rUser = rs.getString("display_name");
-                            String mainReviewImage = rs.getString("main_review_image");
-                            int likeCount = rs.getInt("like_count");
-                            boolean userLiked = rs.getInt("user_liked") > 0;
-        %>
-                try (PreparedStatement psReview = conn.prepareStatement(reviewSql)) {
+<%
+try (Connection conn = DBConnection.getConnection()) {
+
+    String reviewSql =
+        "SELECT r.review_id, r.user_id, r.rating, r.review_text, r.review_date, " +
+        "u.display_name, " +
+        "(SELECT COUNT(*) FROM likes l WHERE l.review_id = r.review_id) AS like_count, " +
+        "(SELECT file_name FROM review_images ri WHERE ri.review_id = r.review_id ORDER BY ri.image_id ASC LIMIT 1) AS main_review_image, " +
+        (loggedIn
+            ? "(SELECT COUNT(*) FROM likes lk2 WHERE lk2.review_id = r.review_id AND lk2.user_id = ?) AS user_liked "
+            : "0 AS user_liked ") +
+        "FROM reviews r " +
+        "LEFT JOIN users u ON u.id = r.user_id " +
+        "WHERE r.location_id = ? " +
+        "ORDER BY r.review_id DESC";
+
+    try (PreparedStatement psReview = conn.prepareStatement(reviewSql)) {
+
+        int idx = 1;
+
+        if (loggedIn) {
+            psReview.setInt(idx++, userId);
+        }
+
+        psReview.setInt(idx, targetLocationId);
+
+        try (ResultSet rs = psReview.executeQuery()) {
+
+            boolean hasReviews = false;
+
+            while (rs.next()) {
+
+                hasReviews = true;
+
+                int reviewId = rs.getInt("review_id");
+                int reviewOwnerId = rs.getInt("user_id");
+                int rating = rs.getInt("rating");
+
+                String rText = rs.getString("review_text");
+                String rDate = rs.getString("review_date");
+
+                String rUser = rs.getString("display_name");
+                if (rUser == null || rUser.trim().isEmpty()) {
+                    rUser = "Anonymous";
+                }
+
+                String mainReviewImage = rs.getString("main_review_image");
+
+                int likeCount = rs.getInt("like_count");
+                boolean userLiked = rs.getInt("user_liked") > 0;
+%>  try (PreparedStatement psReview = conn.prepareStatement(reviewSql)) {
                     int idx = 1;
                     if (loggedIn) {
                         psReview.setInt(idx++, userId);
