@@ -271,9 +271,8 @@ bizRow.append("<input type='hidden' name='tab' value='business'>");
 
                     businessRows.append(bizRow);
 
-                    if (isFeatured == 1) {
-                        featuredRows.append(bizRow);
-                    }
+                   businessRows.append(bizRow);
+                    
                 }
             }
 

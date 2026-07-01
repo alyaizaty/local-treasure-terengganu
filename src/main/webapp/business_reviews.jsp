@@ -256,10 +256,8 @@
         <%
             try (Connection conn = DBConnection.getConnection()) {
                 String reviewSql =
-                    "SELECT r.review_id, r.user_id, r.rating, r.review_text, r.review_date, r.image AS main_review_image, " +
-                    "COALESCE(u.username, CONCAT('User #', r.user_id)) AS display_name, " +
-                    "(SELECT COUNT(*) FROM likes lk WHERE lk.review_id = r.review_id) AS like_count, " +
-                    (loggedIn
+                   "SELECT r.review_id, r.user_id, r.rating, r.review_text, r.review_date, " +
+"(SELECT file_name FROM review_images ri WHERE ri.review_id = r.review_id ORDER BY ri.image_id ASC LIMIT 1) AS main_review_image, " +(loggedIn
                         ? "(SELECT COUNT(*) FROM likes lk2 WHERE lk2.review_id = r.review_id AND lk2.user_id = ?) AS user_liked "
                         : "0 AS user_liked ") +
                     "FROM reviews r " +
