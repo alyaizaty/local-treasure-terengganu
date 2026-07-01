@@ -23,12 +23,15 @@
     String gmapsLink = "https://www.google.com/maps/search/?api=1&query=" + URLEncoder.encode(bName + " " + bAddr, "UTF-8");
 
     String imgUrl = request.getContextPath() + "/image/background.jpg";
-    if (bImg != null && !bImg.trim().isEmpty()) {
-        if (bImg.startsWith("sub_")) imgUrl = request.getContextPath() + "/LocationImageServlet?file=" + URLEncoder.encode(bImg.trim(), "UTF-8");
-        else if (bImg.startsWith("business_")) imgUrl = request.getContextPath() + "/uploads/" + URLEncoder.encode(bImg.trim(), "UTF-8");
-        else imgUrl = request.getContextPath() + "/image/" + bImg.trim();
+if (bImg != null && !bImg.trim().isEmpty()) {
+    if (bImg.startsWith("http://") || bImg.startsWith("https://")) {
+        imgUrl = bImg; // Cloudinary URL terus
+    } else if (bImg.startsWith("business_")) {
+        imgUrl = request.getContextPath() + "/image/background.jpg"; // lama — guna default
+    } else {
+        imgUrl = request.getContextPath() + "/image/" + bImg.trim();
     }
-
+}
     List<Map<String,Object>> promotionsList = (List<Map<String,Object>>) request.getAttribute("promotionsList");
 %>
 <!DOCTYPE html>

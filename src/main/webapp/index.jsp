@@ -410,35 +410,35 @@ if (img != null && !img.trim().isEmpty()) {
                         homeBizRs = homeBizPs.executeQuery();
                         boolean hasBiz = false;
                         
-                        while (homeBizRs.next()) {
-                            hasBiz = true;
-                            int bId = homeBizRs.getInt("business_id");
-                            String bName = homeBizRs.getString("business_name");
-                            String bDesc = homeBizRs.getString("description");
-                            String bAddr = homeBizRs.getString("address");
-                            String bPhone = homeBizRs.getString("contact_phone");
-                            String bHours = homeBizRs.getString("operating_hours");
-                            String bImg = homeBizRs.getString("image");
-                            String catName = homeBizRs.getString("category_name");
-                            String ownerUser = homeBizRs.getString("owner_username");
-                            double avgRating = homeBizRs.getDouble("avg_rating");
-                            int totalReviews = homeBizRs.getInt("total_reviews");
-                            
-                            // FIXED IMAGE LOGIC
-                            String bImgUrl = request.getContextPath() + "/image/background.jpg";
-                            if (bImg != null && !bImg.trim().isEmpty()) {
-                                if (bImg.startsWith("sub_")) {
-                                    bImgUrl = request.getContextPath() + "/LocationImageServlet?file=" + java.net.URLEncoder.encode(bImg.trim(), "UTF-8");
-                                } else if (bImg.startsWith("business_")) {
-                                    bImgUrl = request.getContextPath() + "/uploads/" + java.net.URLEncoder.encode(bImg.trim(), "UTF-8");
-                                } else {
-                                    bImgUrl = request.getContextPath() + "/image/" + bImg.trim();
-                                }
-                            }
-                            
-                            if (bDesc != null && bDesc.length() > 100) {
-                                bDesc = bDesc.substring(0, 95) + "...";
-                            }
+                     while (homeBizRs.next()) {
+    hasBiz = true;
+    int bId = homeBizRs.getInt("business_id");
+    String bName = homeBizRs.getString("business_name");
+    String bDesc = homeBizRs.getString("description");
+    String bAddr = homeBizRs.getString("address");
+    String bPhone = homeBizRs.getString("contact_phone");
+    String bHours = homeBizRs.getString("operating_hours");
+    String bImg = homeBizRs.getString("image");
+    String catName = homeBizRs.getString("category_name");
+    String ownerUser = homeBizRs.getString("owner_username");
+    double avgRating = homeBizRs.getDouble("avg_rating");
+    int totalReviews = homeBizRs.getInt("total_reviews");
+
+    // IMAGE LOGIC
+    String bImgUrl = request.getContextPath() + "/image/background.jpg";
+    if (bImg != null && !bImg.trim().isEmpty()) {
+        if (bImg.startsWith("http://") || bImg.startsWith("https://")) {
+            bImgUrl = bImg; // Cloudinary URL
+        } else if (bImg.startsWith("sub_")) {
+            bImgUrl = request.getContextPath() + "/LocationImageServlet?file=" + java.net.URLEncoder.encode(bImg.trim(), "UTF-8");
+        } else if (!bImg.equals("default_business.jpg")) {
+            bImgUrl = request.getContextPath() + "/image/" + bImg.trim();
+        }
+    }
+
+    if (bDesc != null && bDesc.length() > 100) {
+        bDesc = bDesc.substring(0, 95) + "...";
+    }
                 %>
                         <div class="treasure-card">
                             <img src="<%= bImgUrl %>" onerror="this.onerror=null; this.src='<%= request.getContextPath() %>/image/background.jpg';" alt="<%= bName %>" class="card-image" style="height:180px; object-fit:cover;">
@@ -621,4 +621,4 @@ if (img != null && !img.trim().isEmpty()) {
     });
 </script>
     </body>
-</html>
+</html
