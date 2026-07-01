@@ -37,17 +37,40 @@
         if (dist[r] > maxCount) maxCount = dist[r];
     }
 
-    // SMART IMAGE URL FOR HERO
-    String imgUrl = request.getContextPath() + "/image/background.jpg";
-    if (mainImage != null && !mainImage.trim().isEmpty()) {
-        if (mainImage.startsWith("sub_")) {
-            imgUrl = request.getContextPath() + "/LocationImageServlet?file=" + URLEncoder.encode(mainImage.trim(), "UTF-8");
-        } else if (mainImage.startsWith("business_")) {
-            imgUrl = request.getContextPath() + "/uploads/" + URLEncoder.encode(mainImage.trim(), "UTF-8");
-        } else {
-            imgUrl = request.getContextPath() + "/image/" + mainImage.trim();
-        }
+ // SMART IMAGE URL FOR HERO
+String imgUrl = request.getContextPath() + "/image/background.jpg";
+
+if (mainImage != null && !mainImage.trim().isEmpty()) {
+
+    mainImage = mainImage.trim();
+
+    if (mainImage.startsWith("http://") || mainImage.startsWith("https://")) {
+
+        // Cloudinary / external URL
+        imgUrl = mainImage;
+
+    } else if (mainImage.startsWith("business_")) {
+
+        // Legacy business image
+        imgUrl = request.getContextPath() + "/uploads/"
+                + URLEncoder.encode(mainImage, "UTF-8");
+
+    } else if (mainImage.startsWith("sub_")) {
+
+        // Location image
+        imgUrl = request.getContextPath()
+                + "/LocationImageServlet?file="
+                + URLEncoder.encode(mainImage, "UTF-8");
+
+    } else {
+
+        // Image dalam folder /image
+        imgUrl = request.getContextPath()
+                + "/image/"
+                + mainImage;
+
     }
+}
 
     String msg = request.getParameter("msg");
 %>
@@ -258,7 +281,7 @@ try (Connection conn = DBConnection.getConnection()) {
 
     String reviewSql =
         "SELECT r.review_id, r.user_id, r.rating, r.review_text, r.review_date, " +
-        "u.display_name, " +
+        "u.username, " +
         "(SELECT COUNT(*) FROM likes l WHERE l.review_id = r.review_id) AS like_count, " +
         "(SELECT file_name FROM review_images ri WHERE ri.review_id = r.review_id ORDER BY ri.image_id ASC LIMIT 1) AS main_review_image, " +
         (loggedIn
@@ -294,7 +317,7 @@ try (Connection conn = DBConnection.getConnection()) {
                 String rText = rs.getString("review_text");
                 String rDate = rs.getString("review_date");
 
-                String rUser = rs.getString("display_name");
+                String rUser = rs.getString("username");
                 if (rUser == null || rUser.trim().isEmpty()) {
                     rUser = "Anonymous";
                 }
