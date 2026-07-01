@@ -1,39 +1,24 @@
 package controller;
 
-import java.io.*;
+import java.io.IOException;
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
 @WebServlet("/ReviewImageServlet")
 public class ReviewImageServlet extends HttpServlet {
-
-    private static final String UPLOAD_DIR = "C:/uploads/reviews";
-
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String file = request.getParameter("file");
-        if (file == null || file.contains("..") || file.contains("/") || file.contains("\\"))
+        if (file == null || file.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/image/background.jpg");
             return;
-
-        File img = new File(UPLOAD_DIR, file);
-        if (!img.exists()) return;
-
-        String lower = file.toLowerCase();
-        if (lower.endsWith(".png")) response.setContentType("image/png");
-        else if (lower.endsWith(".webp")) response.setContentType("image/webp");
-        else response.setContentType("image/jpeg");
-
-        response.setContentLengthLong(img.length());
-
-        try (InputStream in = new FileInputStream(img);
-             OutputStream out = response.getOutputStream()) {
-
-            byte[] buf = new byte[8192];
-            int len;
-            while ((len = in.read(buf)) != -1) {
-                out.write(buf, 0, len);
-            }
         }
+        if (file.startsWith("http://") || file.startsWith("https://")) {
+            response.sendRedirect(file);
+            return;
+        }
+        response.sendRedirect(request.getContextPath() + "/image/background.jpg");
     }
 }
